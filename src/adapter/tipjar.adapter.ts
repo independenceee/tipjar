@@ -1,4 +1,4 @@
-import { IFetcher, MeshTxBuilder, MeshWallet } from "@meshsdk/core";
+import { IFetcher, MeshTxBuilder, MeshWallet, UTxO } from "@meshsdk/core";
 import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
 import { HYDRA_URL } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
@@ -27,7 +27,7 @@ export class TipjarAdapter {
     this.initialize();
   }
 
-  async initialize() {
+  protected initialize = async () => {
     const protocolParams = await this.hydraProvider.fetchProtocolParameters();
     this.meshTxBuilder = new MeshTxBuilder({
       fetcher: this.fetcher,
@@ -35,5 +35,22 @@ export class TipjarAdapter {
       params: protocolParams,
       isHydra: !!this.hydraProvider,
     });
-  }
+  };
+
+  protected getWalletForTx = async (): Promise<{
+    utxos: UTxO[];
+    collateral: UTxO;
+    walletAddress: string;
+  }> => {
+    const utxos = await this.meshWallet.getUtxos();
+    const collaterals = await this.meshWallet.getCollateral();
+    const walletAddress = await this.meshWallet.getChangeAddress();
+    if (!utxos || utxos.length === 0) throw new Error("No UTXOs found in getWalletForTx method.");
+
+    if (!collaterals || collaterals.length === 0) throw new Error("No collateral found in getWalletForTx method.");
+
+    if (!walletAddress) throw new Error("No wallet address found in getWalletForTx method.");
+
+    return { utxos, collateral: collaterals[0], walletAddress };
+  };
 }
