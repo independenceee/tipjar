@@ -1,48 +1,20 @@
 import { UTxO } from "@meshsdk/core";
 
-export function getUtxosOnlyLovelace(utxos: UTxO[], total: number, minLovelace = 5_000_000, amount_per_tx = 10) {
-  const validUtxos = utxos
-    .filter((utxo) => utxo.output.amount.every((amount) => amount.unit === "lovelace"))
-    .sort((a, b) => Number(b.output.amount[0].quantity) - Number(a.output.amount[0].quantity));
-
-  const groupCount = Math.floor(total / amount_per_tx);
-  const remainder = total % amount_per_tx;
-
-  const groupTargets = [];
-
-  for (let i = 0; i < groupCount; i++) {
-    groupTargets.push(amount_per_tx * minLovelace);
-  }
-
-  if (remainder > 0) {
-    groupTargets.push(remainder * minLovelace);
-  }
-
-  const groupedUtxos = [];
-
-  for (const target of groupTargets) {
-    const currentGroup = [];
-    let sumLovelace = 0;
-
-    let i = 0;
-    while (i < validUtxos.length) {
-      if (validUtxos[i] === undefined) {
-        i++;
-        continue;
-      }
-
-      currentGroup.push(validUtxos[i]);
-      sumLovelace += Number(validUtxos[i].output.amount[0].quantity);
-      validUtxos.splice(i, 1);
-
-      if (sumLovelace > target) break;
-    }
-
-    if (sumLovelace > target) {
-      groupedUtxos.push(currentGroup);
-    } else {
-      return null;
-    }
-  }
-  return groupedUtxos;
+/**
+ * Returns the first UTxO containing only Lovelace with quantity > 1,000,000,000.
+ * @param utxos - Array of UTxO objects
+ * @returns - A single UTxO or undefined if no UTxO meets the criteria
+ * @throws - Error if no qualifying UTxO is found
+ */
+export function getLovelaceOnlyUTxOs(utxos: UTxO[]): UTxO {
+  return utxos.filter((utxo) => {
+    const amount = utxo.output.amount;
+    return (
+      Array.isArray(amount) &&
+      amount.length === 1 &&
+      amount[0].unit === "lovelace" &&
+      typeof amount[0].quantity === "string" &&
+      Number(amount[0].quantity) > 1_000_000_000
+    );
+  })[0];
 }

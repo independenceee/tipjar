@@ -10,6 +10,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hydra-sdk/bridge": "^1.0.6",
+    "@hydra-sdk/cardano-wasm": "^0.0.5",
+    "@hydra-sdk/core": "^1.0.5",
+    "@hydra-sdk/transaction": "^1.0.7",
     "@meshsdk/core": "^1.9.0-beta.72",
     "@meshsdk/hydra": "^1.9.0-beta.72",
     "@radix-ui/react-slot": "^1.2.3",

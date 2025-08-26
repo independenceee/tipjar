@@ -1,5 +1,6 @@
 import { BlockfrostProvider, MeshTxBuilder, MeshWallet } from "@meshsdk/core";
 import { HydraProvider, HydraInstance } from "@meshsdk/hydra";
+import { getLovelaceOnlyUTxOs } from "~/utils";
 // process.exit(0);
 describe("Bob Tipjar Cardano", function () {
   let meshWallet: MeshWallet;
@@ -33,36 +34,74 @@ describe("Bob Tipjar Cardano", function () {
 
   jest.setTimeout(600000000);
 
-  it("should make and submit a valid tx", async () => {
+  it("Should initialize Hydra Head and reach INITIALIZING status", async function () {
     return;
     await hydraProvider.connect();
-    await hydraProvider.init();
-    const utxos = await meshWallet.getUtxos();
-    console.log(utxos[0]);
-    const protocolParameters = await hydraProvider.fetchProtocolParameters();
-    meshTxBuilder = new MeshTxBuilder({
-      fetcher: hydraProvider,
-      submitter: hydraProvider,
-      params: protocolParameters,
-      isHydra: true,
+
+    await new Promise<void>((resolve, reject) => {
+      hydraProvider.onStatusChange((status) => {
+        try {
+          console.log("Status changed:", status);
+          if (status === "INITIALIZING") {
+            resolve();
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+
+      hydraProvider.init().catch((err: Error) => reject(err));
     });
+  });
 
-    const unsignedTx = await meshTxBuilder
-      // .txIn(utxos[o])
-      .txOut("", [
-        {
-          unit: "lovelace",
-          quantity: "30000",
-        },
-      ])
-      .selectUtxosFrom(utxos)
-      .changeAddress("")
-      .setNetwork("preview")
-      .complete();
+  it("Wait for Close status after initiating fanout", async function () {
+    return;
+    await hydraProvider.connect();
 
-    const signedTx = await meshWallet.signTx(unsignedTx, true);
-    const txHash = await meshWallet.submitTx(signedTx);
-    console.log("commit txhash:", txHash);
-    expect(typeof txHash).toBe("string");
+    await new Promise<void>((resolve, reject) => {
+      hydraProvider.onStatusChange((status) => {
+        try {
+          console.log("Status changed:", status);
+          if (status === "CLOSED") {
+            resolve();
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+
+      hydraProvider.close().catch((err: Error) => reject(err));
+    });
+  });
+
+  it("Wait for FANOUT_POSSIBLE status after initiating fanout", async function () {
+    return;
+    await hydraProvider.connect();
+
+    await new Promise<void>((resolve, reject) => {
+      hydraProvider.onStatusChange((status) => {
+        try {
+          console.log("Status changed:", status);
+          if (status === "FANOUT_POSSIBLE") {
+            resolve();
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+
+      hydraProvider.fanout().catch((err: Error) => reject(err));
+    });
+  });
+
+  it("Should successfully commit fund to Hydra", async function () {
+    return;
+    await hydraProvider.connect();
+    const utxos = await meshWallet.getUtxos();
+    const utxosOnlyLovelace = getLovelaceOnlyUTxOs(utxos);
+    const commitUnsignedTx = await hydraInstance.commitFunds(utxosOnlyLovelace.input.txHash, utxosOnlyLovelace.input.outputIndex);
+    const commitSignedTx = await meshWallet.signTx(commitUnsignedTx, true);
+    const commitTxHash = await meshWallet.submitTx(commitSignedTx);
+    console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
   });
 });
