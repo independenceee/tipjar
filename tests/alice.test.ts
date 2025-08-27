@@ -104,51 +104,54 @@ describe("Alice Tipjar Cardano", function () {
     });
   });
 
-  it("Should successfully commit fund to Hydra", async function () {
+  it("Put UTxO on Hydra network using commitfunds Function", async function () {
     return;
     await hydraProvider.connect();
     const utxos = await meshWallet.getUtxos();
-
     const utxosOnlyLovelace = getLovelaceOnlyUTxOs(utxos);
-    // const commitUnsignedTx = await hydraInstance.incrementalCommitFunds(utxosOnlyLovelace.input.txHash, utxosOnlyLovelace.input.outputIndex);
-
     const commitUnsignedTx = await hydraInstance.commitFunds(utxosOnlyLovelace.input.txHash, utxosOnlyLovelace.input.outputIndex);
     const commitSignedTx = await meshWallet.signTx(commitUnsignedTx, true);
     const commitTxHash = await meshWallet.submitTx(commitSignedTx);
     console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
+  });
 
-    // await new Promise<void>((resolve, reject) => {
-    //   hydraProvider
-    //     .subscribeSnapshotUtxo()
-    //     .then((snapshotUtxos) => {
-    //       console.log("Snapshot UTxOs:", snapshotUtxos);
-    //     })
-    //     .catch((err: Error) => reject(err));
-    //   hydraProvider.onStatusChange((status) => {
-    //     console.log(`Hydra status changed: ${status}`);
-    //     if (status === "OPEN") {
-    //       resolve();
-    //     }
-    //   });
-    // });
+  it("Retrieve UTxO from hydra network using decommit function", async function () {
+    return;
+    await hydraProvider.connect();
+    const utxos = await hydraProvider.fetchAddressUTxOs(await meshWallet.getChangeAddress());
+
+    const unsignedTx = await meshTxBuilder
+      .txIn(utxos[0].input.txHash, utxos[0].input.outputIndex)
+      .txOut(await meshWallet.getChangeAddress(), utxos[0].output.amount)
+      .setFee("0")
+      .setNetwork("preview")
+      .changeAddress(await meshWallet.getChangeAddress())
+      .selectUtxosFrom(utxos)
+      .complete();
+
+    const commitUnsignedTx = await hydraInstance.decommit({
+      cborHex: unsignedTx,
+      type: "Tx ConwayEra",
+      description: "Decommit",
+    });
+    const commitSignedTx = await meshWallet.signTx(commitUnsignedTx, true);
+    const commitTxHash = await meshWallet.submitTx(commitSignedTx);
+    console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
   });
 
   it("Read UTxO from hydra snapshot", async function () {
-    // return;
+    return;
     await hydraProvider.connect();
     const utxos = await hydraProvider.fetchUTxOs();
     console.log(utxos);
   });
 
-  it("Read UTxO ", async function () {
-    return;
+  it("", async function () {
+    // return;
     await hydraProvider.connect();
-    await hydraProvider.init();
-    const utxos = await hydraProvider.fetchAddressUTxOs(await meshWallet.getChangeAddress());
-
-    const address = await meshWallet.getChangeAddress();
-    console.log(utxos);
-    console.log(address);
+    const utxos = await hydraProvider.fetchAddressUTxOs(
+      "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
+    );
 
     const unsignedTx = await meshTxBuilder
       .txIn(utxos[0].input.txHash, utxos[0].input.outputIndex)
@@ -156,18 +159,21 @@ describe("Alice Tipjar Cardano", function () {
         { unit: "lovelace", quantity: "10000000" },
       ])
 
-      .txOut(await meshWallet.getChangeAddress(), [{ unit: "lovelace", quantity: "9990000000" }])
+      .txOut("addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g", [
+        { unit: "lovelace", quantity: "9990000000" },
+      ])
 
       .changeAddress(await meshWallet.getChangeAddress())
       .selectUtxosFrom(utxos)
+      .setFee("0")
       .setNetwork("preview")
       .complete();
 
     console.log(unsignedTx);
 
     const signedTx = await meshWallet.signTx(unsignedTx, true);
-    const txHash = await hydraProvider.submitTx(signedTx);
+    await hydraProvider.submitTx(signedTx);
     const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
-    console.log("================================" + utxosSnapshot);
+    console.log(utxosSnapshot);
   });
 });
