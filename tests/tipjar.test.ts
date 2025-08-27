@@ -41,7 +41,6 @@ describe("Hydra Tipjar Cardano", function () {
       params: protocolParameters,
     });
 
-    await hydraProvider.connect();
   });
 
   jest.setTimeout(60_000_000);

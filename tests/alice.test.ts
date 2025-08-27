@@ -11,7 +11,8 @@ describe("Alice Tipjar Cardano", function () {
 
   beforeEach(async function () {
     hydraProvider = new HydraProvider({
-      httpUrl: "http://194.195.87.66:4002",
+      httpUrl: "http://194.195.87.66:4001",
+      // history: true,
     });
     blockfrostProvider = new BlockfrostProvider("previewkiE6gOIulzmz9HIxyrTW2axrxWj4wMHt");
 
@@ -38,6 +39,7 @@ describe("Alice Tipjar Cardano", function () {
       submitter: hydraProvider,
       isHydra: true,
       params: protocolParameters,
+      verbose: true,
     });
   });
 
@@ -46,7 +48,6 @@ describe("Alice Tipjar Cardano", function () {
   it("Should initialize Hydra Head and reach INITIALIZING status", async function () {
     return;
     await hydraProvider.connect();
-
     await new Promise<void>((resolve, reject) => {
       hydraProvider.onStatusChange((status) => {
         try {
@@ -66,7 +67,7 @@ describe("Alice Tipjar Cardano", function () {
   it("Wait for Close status after initiating fanout", async function () {
     return;
     await hydraProvider.connect();
-
+    await hydraProvider.subscribeSnapshotUtxo();
     await new Promise<void>((resolve, reject) => {
       hydraProvider.onStatusChange((status) => {
         try {
@@ -74,8 +75,8 @@ describe("Alice Tipjar Cardano", function () {
           if (status === "CLOSED") {
             resolve();
           }
-        } catch (e) {
-          reject(e);
+        } catch (error) {
+          reject("Error: " + error);
         }
       });
 
@@ -86,7 +87,7 @@ describe("Alice Tipjar Cardano", function () {
   it("Wait for FANOUT_POSSIBLE status after initiating fanout", async function () {
     return;
     await hydraProvider.connect();
-
+    await hydraProvider.contest();
     await new Promise<void>((resolve, reject) => {
       hydraProvider.onStatusChange((status) => {
         try {
@@ -116,25 +117,31 @@ describe("Alice Tipjar Cardano", function () {
     const commitTxHash = await meshWallet.submitTx(commitSignedTx);
     console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
 
-    await new Promise<void>((resolve, reject) => {
-      hydraProvider.onStatusChange((status) => {
-        console.log(`Hydra status changed: ${status}`);
-        if (status === "OPEN") {
-          resolve();
-        }
-      });
-    });
+    // await new Promise<void>((resolve, reject) => {
+    //   hydraProvider
+    //     .subscribeSnapshotUtxo()
+    //     .then((snapshotUtxos) => {
+    //       console.log("Snapshot UTxOs:", snapshotUtxos);
+    //     })
+    //     .catch((err: Error) => reject(err));
+    //   hydraProvider.onStatusChange((status) => {
+    //     console.log(`Hydra status changed: ${status}`);
+    //     if (status === "OPEN") {
+    //       resolve();
+    //     }
+    //   });
+    // });
   });
 
   it("Read UTxO from hydra snapshot", async function () {
-    return;
+    // return;
     await hydraProvider.connect();
     const utxos = await hydraProvider.fetchUTxOs();
     console.log(utxos);
   });
 
   it("Read UTxO ", async function () {
-    // return;
+    return;
     await hydraProvider.connect();
     await hydraProvider.init();
     const utxos = await hydraProvider.fetchAddressUTxOs(await meshWallet.getChangeAddress());
@@ -144,17 +151,23 @@ describe("Alice Tipjar Cardano", function () {
     console.log(address);
 
     const unsignedTx = await meshTxBuilder
+      .txIn(utxos[0].input.txHash, utxos[0].input.outputIndex)
       .txOut("addr_test1qzk0hl57jzwu2p0kpuqs48q2f7vty8efhcwh4l8wynckp4se2hwvvldt8r4c3cr7dcszlt2f7xs5ef2hydn25pugcgvs4843vd", [
-        { unit: "lovelace", quantity: "30000000" },
+        { unit: "lovelace", quantity: "10000000" },
       ])
+
+      .txOut(await meshWallet.getChangeAddress(), [{ unit: "lovelace", quantity: "9990000000" }])
+
       .changeAddress(await meshWallet.getChangeAddress())
       .selectUtxosFrom(utxos)
       .setNetwork("preview")
       .complete();
 
+    console.log(unsignedTx);
+
     const signedTx = await meshWallet.signTx(unsignedTx, true);
     const txHash = await hydraProvider.submitTx(signedTx);
-
-    console.log(txHash);
+    const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
+    console.log("================================" + utxosSnapshot);
   });
 });

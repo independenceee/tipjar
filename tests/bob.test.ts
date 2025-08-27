@@ -11,7 +11,7 @@ describe("Bob Tipjar Cardano", function () {
 
   beforeEach(function () {
     hydraProvider = new HydraProvider({
-      httpUrl: "http://194.195.87.66:4001",
+      httpUrl: "http://194.195.87.66:4002",
     });
     blockfrostProvider = new BlockfrostProvider("previewkiE6gOIulzmz9HIxyrTW2axrxWj4wMHt");
 
