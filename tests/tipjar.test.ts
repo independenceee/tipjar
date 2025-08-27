@@ -1,94 +1,216 @@
 import { BlockfrostProvider, MeshTxBuilder, MeshWallet, UTxO, value } from "@meshsdk/core";
 import { HydraProvider, HydraInstance } from "@meshsdk/hydra";
-import { BLOCKFROST_API_KEY } from "~/constants/enviroments";
-import { getLovelaceOnlyUTxOs } from "~/utils";
+import { BLOCKFROST_API_KEY, HYDRA_HTTP_URL, HYDRA_WS_URL } from "~/constants/enviroments";
+import { getLovelaceOnlyUTxO } from "~/utils";
 
-describe("Hydra Tipjar Cardano", function () {
-  let meshWallet: MeshWallet;
-  let meshTxBuilder: MeshTxBuilder;
-  let hydraProvider: HydraProvider;
-  let hydraInstance: HydraInstance;
-  let blockfrostProvider: BlockfrostProvider;
+describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communities", function () {
+    let meshWallet: MeshWallet;
+    let meshTxBuilder: MeshTxBuilder;
+    let hydraProvider: HydraProvider;
+    let hydraInstance: HydraInstance;
+    let blockfrostProvider: BlockfrostProvider;
 
-  beforeEach(async function () {
-    hydraProvider = new HydraProvider({
-      httpUrl: "http://194.195.87.66:4001",
-      wsUrl: "ws://194.195.87.66:4001",
+    beforeEach(async function () {
+        hydraProvider = new HydraProvider({
+            httpUrl: "http://194.195.87.66:4001",
+        });
+
+        blockfrostProvider = new BlockfrostProvider(BLOCKFROST_API_KEY);
+
+        hydraInstance = new HydraInstance({
+            provider: hydraProvider,
+            fetcher: blockfrostProvider,
+            submitter: blockfrostProvider,
+        });
+
+        meshWallet = new MeshWallet({
+            networkId: 0,
+            fetcher: blockfrostProvider,
+            submitter: blockfrostProvider,
+            key: {
+                type: "mnemonic",
+                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+            },
+        });
+
+        const protocolParameters = await hydraProvider.fetchProtocolParameters();
+
+        meshTxBuilder = new MeshTxBuilder({
+            fetcher: hydraProvider,
+            submitter: hydraProvider,
+            isHydra: true,
+            params: protocolParameters,
+        });
     });
-    blockfrostProvider = new BlockfrostProvider(BLOCKFROST_API_KEY);
 
-    hydraInstance = new HydraInstance({
-      provider: hydraProvider,
-      fetcher: blockfrostProvider,
-      submitter: blockfrostProvider,
+    jest.setTimeout(60_000_000);
+
+    describe("Common and basic state management in head hydra", function () {
+        it("Initializing Head creation and UTxO commitment phase.", async () => {
+            return;
+            await hydraProvider.connect();
+            await new Promise<void>((resolve, reject) => {
+                hydraProvider.onStatusChange((status) => {
+                    try {
+                        if (status === "INITIALIZING") {
+                            resolve();
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                hydraProvider.init().catch((error: Error) => reject(error));
+            });
+        });
+
+        it("Closed Head closed, starting contestation phase.", async () => {
+            return;
+            await hydraProvider.connect();
+            await new Promise<void>((resolve, reject) => {
+                hydraProvider.onStatusChange((status) => {
+                    try {
+                        if (status === "CLOSED") {
+                            resolve();
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                hydraProvider.close().catch((error: Error) => reject(error));
+            });
+        });
+
+        it("Ready to fanout  Snapshot finalized, ready for layer-1 distribution.", async () => {
+            return;
+            await hydraProvider.connect();
+            await new Promise<void>((resolve, reject) => {
+                hydraProvider.onStatusChange((status) => {
+                    try {
+                        if (status === "FANOUT_POSSIBLE") {
+                            resolve();
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                hydraProvider.fanout().catch((error: Error) => reject(error));
+            });
+        });
+
+        it("Finalized Head completed, UTxOs returned to layer-1.", async function () {
+            return;
+            await hydraProvider.connect();
+            await new Promise<void>((resolve, reject) => {
+                hydraProvider.onStatusChange((status) => {
+                    try {
+                        if (status === "FINAL") {
+                            resolve();
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                hydraProvider.fanout().catch((error: Error) => reject(error));
+            });
+        });
+
+        it("Aborted Head canceled before opening.", async () => {
+            return;
+            await hydraProvider.connect();
+            await new Promise<void>((resolve, reject) => {
+                hydraProvider.onStatusChange((status) => {
+                    try {
+                        if (status === "OPEN") {
+                            resolve();
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                hydraProvider.abort().catch((error: Error) => reject(error));
+            });
+        });
     });
 
-    meshWallet = new MeshWallet({
-      networkId: 0,
-      fetcher: blockfrostProvider,
-      submitter: blockfrostProvider,
-      key: {
-        type: "mnemonic",
-        words: process.env.APP_MNEMONIC?.split(" ") || [],
-      },
+    describe("Implement full fund lifecycle within Hydra head (commit funds into head and decommit them back to main chain)", () => {
+        it("1- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
+            return;
+            await hydraProvider.connect();
+            const utxos = await meshWallet.getUtxos();
+            const utxoOnlyLovelace = getLovelaceOnlyUTxO(utxos);
+            const commitUnsignedTx = await hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
+            const commitSignedTx = await meshWallet.signTx(commitUnsignedTx, true);
+            const commitTxHash = await meshWallet.submitTx(commitSignedTx);
+            console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
+            const snapshotUtxos = await hydraProvider.subscribeSnapshotUtxo();
+            console.log(snapshotUtxos);
+        });
+
+        it("2- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
+            return;
+            await hydraProvider.connect();
+            const utxos = await meshWallet.getUtxos();
+            const utxoOnlyLovelace = getLovelaceOnlyUTxO(utxos);
+            console.log(utxoOnlyLovelace);
+            const walletAddress = await meshWallet.getChangeAddress();
+            const unsignedTx = await meshTxBuilder
+                .txIn(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex)
+                .txOut("", utxoOnlyLovelace.output.amount)
+                .changeAddress(walletAddress)
+                .selectUtxosFrom(utxos)
+                .setNetwork("preview")
+                .complete();
+            const commitSignedTx = await meshWallet.signTx(unsignedTx, true);
+            const commitTxHash = await meshWallet.submitTx(commitSignedTx);
+            console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
+            const snapshotUtxos = await hydraProvider.subscribeSnapshotUtxo();
+            console.log(snapshotUtxos);
+        });
+
+        it("1- Decommit UTXOs from the Hydra head, withdrawing funds back to the Cardano main chain.", async () => {
+            return;
+        });
+
+        it("2- Decommit UTXOs from the Hydra head, withdrawing funds back to the Cardano main chain.", async () => {
+            return;
+        });
     });
-    const protocolParameters = await hydraProvider.fetchProtocolParameters();
 
-    meshTxBuilder = new MeshTxBuilder({
-      fetcher: hydraProvider,
-      submitter: hydraProvider,
-      isHydra: true,
-      params: protocolParameters,
+    describe("Building utxo reading functions in hydra brought to Layer", function () {});
+
+    describe("Transaction processing in hydra from basic to advanced", function () {
+        it("Lovelace transfer from one address to another", async function () {
+            return;
+            await hydraProvider.connect();
+            const walletAddress = await meshWallet.getChangeAddress();
+            const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+
+            const unsignedTx = await meshTxBuilder
+                .txIn(utxos[0].input.txHash, utxos[0].input.outputIndex)
+                .txOut("addr_test1qzk0hl57jzwu2p0kpuqs48q2f7vty8efhcwh4l8wynckp4se2hwvvldt8r4c3cr7dcszlt2f7xs5ef2hydn25pugcgvs4843vd", [
+                    {
+                        unit: "lovelace",
+                        quantity: "1000000",
+                    },
+                ])
+                .changeAddress(walletAddress)
+                .selectUtxosFrom(utxos)
+                .setFee("0")
+                .setNetwork("preview")
+                .complete();
+            const signedTx = await meshWallet.signTx(unsignedTx, true);
+            const txHash = await hydraProvider.submitTx(signedTx);
+            console.log(txHash);
+            const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
+            console.log(utxosSnapshot);
+        });
+
+        it("Transfer funds from one address to another with datum", function () {});
     });
-
-  });
-
-  jest.setTimeout(60_000_000);
-
-  it("Check and initialize Hydra Head", async function () {
-    return;
-    await hydraProvider.connect();
-    await hydraProvider.fanout();
-  });
-
-  describe("Commit funds to Hydra", function () {
-    it("Should successfully commit fund to Hydra", async function () {
-      return;
-
-      const utxos = await meshWallet.getUtxos();
-
-      const utxosOnlyLovelace = getLovelaceOnlyUTxOs(utxos);
-      console.log(utxosOnlyLovelace);
-
-      const commitUnsignedTx = await hydraInstance.commitFunds(utxosOnlyLovelace.input.txHash, utxosOnlyLovelace.input.outputIndex);
-      const commitSignedTx = await meshWallet.signTx(commitUnsignedTx, true);
-      const commitTxHash = await meshWallet.submitTx(commitSignedTx);
-
-      // await hydraProvider.buildCommit()
-      console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
-    });
-  });
-
-  describe("Should read utxos successfully", function () {
-    it("Read UTxO ", async function () {
-      return;
-      const utxos = await hydraProvider.fetchAddressUTxOs(await meshWallet.getChangeAddress());
-
-      console.log(utxos);
-
-      const unsignedTx = await meshTxBuilder
-        .txOut("addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g", [
-          { unit: "lovelace", quantity: "3000000" },
-        ])
-        .changeAddress(await meshWallet.getChangeAddress())
-        .selectUtxosFrom(utxos)
-        .setNetwork("preview")
-        .complete();
-
-      const signedTx = await meshWallet.signTx(unsignedTx);
-      await hydraProvider.submitTx(signedTx);
-    });
-  });
-
-  describe("", function () {});
 });

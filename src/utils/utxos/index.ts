@@ -6,15 +6,15 @@ import { UTxO } from "@meshsdk/core";
  * @returns - A single UTxO or undefined if no UTxO meets the criteria
  * @throws - Error if no qualifying UTxO is found
  */
-export function getLovelaceOnlyUTxOs(utxos: UTxO[]): UTxO {
-  return utxos.filter((utxo) => {
-    const amount = utxo.output.amount;
-    return (
-      Array.isArray(amount) &&
-      amount.length === 1 &&
-      amount[0].unit === "lovelace" &&
-      typeof amount[0].quantity === "string" &&
-      Number(amount[0].quantity) > 1_000_000_000
-    );
-  })[0];
+export function getLovelaceOnlyUTxO(utxos: UTxO[]): UTxO {
+    return utxos.filter((utxo) => {
+        const amount = utxo.output.amount;
+        return (
+            Array.isArray(amount) &&
+            amount.length === 1 &&
+            amount[0].unit === "lovelace" &&
+            typeof amount[0].quantity === "string" &&
+            Number(amount[0].quantity) > 1_000_000_000
+        );
+    })[0];
 }
