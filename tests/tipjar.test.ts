@@ -102,7 +102,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Finalized Head completed, UTxOs returned to layer-1.", async function () {
-            return;
+            // return;
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {
@@ -243,9 +243,9 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
             const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
             const forgingScript = ForgeScript.withOneSignature(walletAddress);
             const policyId = resolveScriptHash(forgingScript);
-            const assetName = stringToHex("Independence");
+            const assetName = stringToHex("Independences");
             const metadata = {
-                name: "Independence",
+                name: "Independences",
                 image: "ipfs://QmRzicpReutwCkM6aotuKjErFCUD213DpwPq6ByuzMJaua",
                 mediaType: "image/jpg",
                 description: "This NFT was minted by Hydra Layer 2 Cardano.",
@@ -255,6 +255,44 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
                 .mint("1", policyId, assetName)
                 .mintingScript(forgingScript)
                 .metadataValue(721, { [policyId]: { [assetName]: { ...metadata } } })
+                .txOut(walletAddress, [
+                    {
+                        quantity: "1",
+                        unit: policyId + assetName,
+                    },
+                    {
+                        quantity: "2000000",
+                        unit: "lovelace",
+                    },
+                ])
+                .changeAddress(walletAddress)
+                .selectUtxosFrom(utxos)
+                .setNetwork("preview")
+                .setFee("0")
+                .complete();
+            const signedTx = await meshWallet.signTx(unsignedTx, true);
+            await hydraProvider.submitTx(signedTx);
+            const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
+            console.log(utxosSnapshot);
+        });
+
+        it("Asset transfer from one address to another", async function () {
+            // return;
+            await hydraProvider.connect();
+            const walletAddress = await meshWallet.getChangeAddress();
+            const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+            const forgingScript = ForgeScript.withOneSignature(walletAddress);
+            const policyId = resolveScriptHash(forgingScript);
+            const assetName = stringToHex("Independence");
+
+            const unsignedTx = await meshTxBuilder
+                .txIn(utxos[0].input.txHash, utxos[0].input.outputIndex)
+                .txOut("addr_test1qzk0hl57jzwu2p0kpuqs48q2f7vty8efhcwh4l8wynckp4se2hwvvldt8r4c3cr7dcszlt2f7xs5ef2hydn25pugcgvs4843vd", [
+                    {
+                        unit: policyId + assetName,
+                        quantity: "1",
+                    },
+                ])
                 .changeAddress(walletAddress)
                 .selectUtxosFrom(utxos)
                 .setNetwork("preview")
