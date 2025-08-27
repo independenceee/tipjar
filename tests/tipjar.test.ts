@@ -1,4 +1,4 @@
-import { BlockfrostProvider, MeshTxBuilder, MeshWallet, UTxO, value } from "@meshsdk/core";
+import { BlockfrostProvider, ForgeScript, mConStr0, MeshTxBuilder, MeshWallet, resolveScriptHash, stringToHex, UTxO, value } from "@meshsdk/core";
 import { HydraProvider, HydraInstance } from "@meshsdk/hydra";
 import { BLOCKFROST_API_KEY, HYDRA_HTTP_URL, HYDRA_WS_URL } from "~/constants/enviroments";
 import { getLovelaceOnlyUTxO } from "~/utils";
@@ -205,12 +205,88 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
                 .setNetwork("preview")
                 .complete();
             const signedTx = await meshWallet.signTx(unsignedTx, true);
-            const txHash = await hydraProvider.submitTx(signedTx);
-            console.log(txHash);
+            await hydraProvider.submitTx(signedTx);
             const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
             console.log(utxosSnapshot);
         });
 
-        it("Transfer funds from one address to another with datum", function () {});
+        it("Transfer funds from one address to another with datum", async function () {
+            return;
+            await hydraProvider.connect();
+            const walletAddress = await meshWallet.getChangeAddress();
+            const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+
+            const unsignedTx = await meshTxBuilder
+                .txIn(utxos[0].input.txHash, utxos[0].input.outputIndex)
+                .txOut("addr_test1qzk0hl57jzwu2p0kpuqs48q2f7vty8efhcwh4l8wynckp4se2hwvvldt8r4c3cr7dcszlt2f7xs5ef2hydn25pugcgvs4843vd", [
+                    {
+                        unit: "lovelace",
+                        quantity: "5000000",
+                    },
+                ])
+                .txOutInlineDatumValue(mConStr0(["Independence"]))
+                .changeAddress(walletAddress)
+                .selectUtxosFrom(utxos)
+                .setFee("0")
+                .setNetwork("preview")
+                .complete();
+            const signedTx = await meshWallet.signTx(unsignedTx, true);
+            await hydraProvider.submitTx(signedTx);
+            const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
+            console.log(utxosSnapshot);
+        });
+
+        it("Mint assets via forge script with CIP25", async function () {
+            return;
+            await hydraProvider.connect();
+            const walletAddress = await meshWallet.getChangeAddress();
+            const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+            const forgingScript = ForgeScript.withOneSignature(walletAddress);
+            const policyId = resolveScriptHash(forgingScript);
+            const assetName = stringToHex("Independence");
+            const metadata = {
+                name: "Independence",
+                image: "ipfs://QmRzicpReutwCkM6aotuKjErFCUD213DpwPq6ByuzMJaua",
+                mediaType: "image/jpg",
+                description: "This NFT was minted by Hydra Layer 2 Cardano.",
+            };
+
+            const unsignedTx = await meshTxBuilder
+                .mint("1", policyId, assetName)
+                .mintingScript(forgingScript)
+                .metadataValue(721, { [policyId]: { [assetName]: { ...metadata } } })
+                .changeAddress(walletAddress)
+                .selectUtxosFrom(utxos)
+                .setNetwork("preview")
+                .setFee("0")
+                .complete();
+            const signedTx = await meshWallet.signTx(unsignedTx, true);
+            await hydraProvider.submitTx(signedTx);
+            const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
+            console.log(utxosSnapshot);
+        });
+
+        it("Burn assets via forge script with CIP25", async function () {
+            return;
+            await hydraProvider.connect();
+            const walletAddress = await meshWallet.getChangeAddress();
+            const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+            const forgingScript = ForgeScript.withOneSignature(walletAddress);
+            const policyId = resolveScriptHash(forgingScript);
+            const assetName = stringToHex("Independence");
+
+            const unsignedTx = await meshTxBuilder
+                .mint("-1", policyId, assetName)
+                .mintingScript(forgingScript)
+                .changeAddress(walletAddress)
+                .selectUtxosFrom(utxos)
+                .setNetwork("preview")
+                .setFee("0")
+                .complete();
+            const signedTx = await meshWallet.signTx(unsignedTx, true);
+            await hydraProvider.submitTx(signedTx);
+            const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
+            console.log(utxosSnapshot);
+        });
     });
 });
