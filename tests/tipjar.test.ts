@@ -84,7 +84,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Ready to fanout  Snapshot finalized, ready for layer-1 distribution.", async () => {
-            return;
+            // return;
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {
