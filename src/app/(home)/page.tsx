@@ -1,58 +1,131 @@
 import Image from "next/image";
 import Link from "next/link";
+import Action from "~/components/action";
+import Footer from "~/components/footer";
+import Header from "~/components/header";
 import { routers } from "~/constants/routers";
 import { images } from "~/public/images";
+
 export default function Home() {
-  return (
-    <main className="w-full min-h-screen bg-white overflow-auto">
-      <div className="fixed inset-0 w-full h-full bg-top bg-cover bg-no-repeat z-0" />
-      <div className="relative max-w-screen-2xl mx-auto min-h-screen">
-        <div className="hidden md:block">
-          {/* header */}
-          <div className="absolute top-[74px] h-[82px] rounded-[75px] flex items-center z-10 bg-white  w-full border-b border-gray-200 dark:border-white/20  backdrop-blur-sm">
-            <div className="absolute border-[5px] border-[rgba(79,55,139,0.05)] border-solid inset-[-5px] pointer-events-none rounded-[80px]" />
-            <div className="flex flex-row items-center justify-between w-full h-full pl-6 pr-[11px] py-[9px]">
-              <Link href={routers.home} className="flex items-center gap-4">
-                <Image src={images.logo} alt="Logo" width={50} height={50} />
-                <h2 className="bg-gradient-to-r from-[#4b7cf6] to-[#e34aa5] bg-clip-text text-transparent font-bold text-[35px]">Hydra Tipjar</h2>
-              </Link>
-              <div className="bg-gradient-to-r from-[#4b7cf6] to-[#9564cf] p-[2px] rounded-full w-fit">
-                <Link
-                  className="flex items-center justify-center w-fit h-[54px] bg-[#fcfafe] rounded-full px-6 text-[18px] font-bold text-[#4b7cf6] transition outline-none"
-                  href={routers.login}
-                >
-                  Connect Wallet
-                </Link>
-              </div>
-            </div>
-          </div>
-          {/*  */}
-          <div className="absolute left-[130px] top-[240px] w-[682px] flex flex-col items-start z-10">
-            <h1 className="font-bold text-[64px] leading-[64px] tracking-[-0.25px] text-[#121212] mb-6 font-['Circular_Std:Medium',_sans-serif]">
-              Get <span className="bg-gradient-to-r from-[#4b7cf6] to-[#e34aa5] bg-clip-text text-transparent">tipped in crypto. </span>
-              <span>Anywhere,Everywhere.</span>
-            </h1>
-            <div className="flex flex-col gap-2.5 w-[314px]">
-              <div className="flex items-center bg-gradient-to-r from-[#ffffff00] to-[#ffffff80] rounded-bl-[8px] rounded-br-[100px] rounded-tl-[8px] rounded-tr-[100px] px-4 h-9 mb-1">
-                {/* <Image src="/lovable-uploads/abdf0571-c0da-4233-90a5-34e8a61d2054.png" alt="check" className="w-[18px] h-[18px] mr-2.5" /> */}
-                <span className="font-normal text-[24px] text-[#3d3b43]">Create your Tip Jar</span>
-              </div>
-              <div className="flex items-center bg-gradient-to-r from-[#ffffff00] to-[#ffffff80] rounded-bl-[8px] rounded-br-[100px] rounded-tl-[8px] rounded-tr-[100px] px-4 h-9 mb-1">
-                {/* <Image src="/lovable-uploads/abdf0571-c0da-4233-90a5-34e8a61d2054.png" alt="check" className="w-[18px] h-[18px] mr-2.5" /> */}
-                <span className="font-normal text-[24px] text-[#3d3b43]">Share your link</span>
-              </div>
-              <div className="flex items-center bg-gradient-to-r from-[#ffffff00] to-[#ffffff80] rounded-bl-[8px] rounded-br-[100px] rounded-tl-[8px] rounded-tr-[100px] px-4 h-9 mb-1">
-                {/* <Image src="/lovable-uploads/abdf0571-c0da-4233-90a5-34e8a61d2054.png" alt="check" className="w-[18px] h-[18px] mr-2.5" /> */}
-                <span className="font-normal text-[24px] text-[#3d3b43]">Receive crypto tips.</span>
-              </div>
-            </div>
-            <button className="mt-6 bg-gradient-to-r from-[#4b7cf6] to-[#9564cf] rounded-full text-white font-bold text-[18px] px-6 h-[64px] flex items-center justify-center w-fit transition-shadow hover:shadow-lg">
-              Start Earning Tips.
-            </button>
-          </div>
-          {/*  */}
-        </div>
-      </div>
-    </main>
-  );
+    return (
+        <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+            <Header />
+            <main>
+                <section id="Landing" className="relative flex min-h-screen items-center overflow-hidden">
+                    {/* <div className="absolute -left-40 top-1/2 -translate-y-1/2 transform opacity-5">
+        <Image loading="lazy" className="h-[50vh] w-auto" style={{ color: "transparent" }} decoding="async" src={images.logo} alt="cardano2vn" />
+      </div> */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-5">
+                        <div className="text-center">
+                            <div className="text-9xl font-bold text-gray-300 dark:text-white/10">CARDANO</div>
+                            <div className="text-6xl font-bold text-gray-300 dark:text-white/10">.IO</div>
+                            <div className="text-4xl font-bold text-gray-300 dark:text-white/10">BREAK THE BLOCKS</div>
+                        </div>
+                    </div>
+                    <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+                        <div className="relative">
+                            <div className="grid items-center gap-8 lg:grid-cols-2">
+                                <section className="relative">
+                                    <h1 className="mb-10 text-5xl font-bold  lg:text-8xl">
+                                        <span className="block tracking-tight text-gray-900 dark:text-white">Verified</span>
+                                        <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-300 bg-clip-text tracking-tight text-gray-900 dark:text-transparent drop-shadow-lg">
+                                            Trusted
+                                        </span>
+                                        <span className="mt-4 block text-2xl font-normal text-gray-600 dark:text-gray-300 lg:text-4xl">
+                                            for Distributed Work
+                                        </span>
+                                    </h1>
+                                    <div className="relative mb-12 border-l-2 border-gray-300 dark:border-white/20 pl-6">
+                                        <p className="mb-6 text-xl leading-relaxed text-gray-600 dark:text-gray-300">
+                                            Infrastructure for <strong className="text-gray-900 dark:text-white">decentralized access control</strong>
+                                            , credential issuance, contributor onboarding, and treasury management.
+                                        </p>
+                                        <p className="text-lg text-gray-500 dark:text-gray-400">Local participation that opens global opportunity.</p>
+                                    </div>
+                                    <div className="flex flex-col gap-6 sm:flex-row">
+                                        <Link
+                                            href={routers.home}
+                                            className="inline-flex items-center justify-center whitespace-nowrap rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:text-success text-xl bg-blue-600 dark:bg-white px-8 py-4 font-semibold text-white dark:text-blue-900 shadow-xl hover:bg-blue-700 dark:hover:bg-gray-100"
+                                        >
+                                            Start With Dashboard
+                                        </Link>
+                                        <Link
+                                            href={routers.login}
+                                            className="inline-flex items-center justify-center whitespace-nowrap rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-white/50 px-8 py-4 text-lg font-semibold text-gray-900 dark:text-white shadow-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+                                        >
+                                            View Documents
+                                        </Link>
+                                    </div>
+                                </section>
+                                <section className="relative hidden lg:block">
+                                    <div className="relative">
+                                        <div className="relative h-[55vh] w-full">
+                                            <div className="absolute left-12 top-0 z-10 h-48 w-56 -rotate-2 transform overflow-hidden border-8 border-gray-200 dark:border-white shadow-2xl">
+                                                <div
+                                                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                    // style={{ backgroundImage: `url(${images.landing01.src})` }}
+                                                ></div>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-800/40 to-transparent"></div>
+                                                <div className="relative flex h-full flex-col justify-end p-4">
+                                                    <div className="mb-3 h-8 w-full bg-gradient-to-r from-blue-500/20 to-transparent"></div>
+                                                    <div className="space-y-1">
+                                                        <div className="h-1.5 w-2/3 bg-gray-300 dark:bg-white/20"></div>
+                                                        <div className="h-1.5 w-1/2 bg-gray-200 dark:bg-white/10"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="absolute right-8 top-8 z-20 h-64 w-64 rotate-1 transform overflow-hidden border-8 border-gray-200 dark:border-white shadow-2xl">
+                                                <div
+                                                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                    // style={{ backgroundImage: `url(${images.landing02.src})` }}
+                                                ></div>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-cyan-900/80 via-cyan-800/40 to-transparent"></div>
+                                                <div className="relative flex h-full flex-col justify-end p-4">
+                                                    <div className="mb-3 h-12 w-full bg-gradient-to-r from-cyan-500/20 to-transparent"></div>
+                                                    <div className="space-y-2">
+                                                        <div className="h-1.5 w-2/3 bg-gray-300 dark:bg-white/20"></div>
+                                                        <div className="h-1.5 w-3/4 bg-gray-200 dark:bg-white/10"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="absolute bottom-24 left-4 z-30 h-60 w-72 -rotate-1 transform overflow-hidden border-8 border-gray-200 dark:border-white shadow-2xl">
+                                                <div
+                                                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                    // style={{ backgroundImage: `url(${images.landing03.src})` }}
+                                                ></div>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/80 via-purple-800/40 to-transparent"></div>
+                                                <div className="relative flex h-full flex-col justify-end p-4">
+                                                    <div className="mb-3 h-12 w-full bg-gradient-to-r from-purple-500/20 to-transparent"></div>
+                                                    <div className="space-y-2">
+                                                        <div className="h-1.5 w-1/2 bg-gray-300 dark:bg-white/20"></div>
+                                                        <div className="h-1.5 w-2/3 bg-gray-200 dark:bg-white/10"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="absolute bottom-12 right-12 z-40 h-52 w-52 rotate-3 transform overflow-hidden border-8 border-gray-200 dark:border-white shadow-2xl">
+                                                <div
+                                                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                    // style={{ backgroundImage: `url(${images.landing04.src})` }}
+                                                ></div>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-green-900/80 via-green-800/40 to-transparent"></div>
+                                                <div className="relative flex h-full flex-col justify-end p-4">
+                                                    <div className="mb-3 h-10 w-full bg-gradient-to-r from-green-500/20 to-transparent"></div>
+                                                    <div className="space-y-1">
+                                                        <div className="h-1.5 w-3/5 bg-gray-300 dark:bg-white/20"></div>
+                                                        <div className="h-1.5 w-4/5 bg-gray-200 dark:bg-white/10"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                    <Action title="Next" href="#trust" />
+                </section>
+            </main>
+            <Footer />
+        </main>
+    );
 }

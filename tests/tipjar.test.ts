@@ -29,8 +29,8 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
             submitter: blockfrostProvider,
             key: {
                 type: "mnemonic",
-                // words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
-                words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
             },
         });
 
