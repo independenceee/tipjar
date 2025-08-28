@@ -29,8 +29,8 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
             submitter: blockfrostProvider,
             key: {
                 type: "mnemonic",
-                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
-                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
             },
         });
 
@@ -102,7 +102,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Finalized Head completed, UTxOs returned to layer-1.", async function () {
-            // return;
+            return;
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {
@@ -182,7 +182,14 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
     });
 
-    describe("Building utxo reading functions in hydra brought to Layer", function () {});
+    describe("Building utxo reading functions in hydra brought to Layer", function () {
+        it("", async function () {
+            return;
+            await hydraProvider.connect();
+            const utxos = await hydraProvider.fetchUTxOs();
+            // console.log(utxos[0].output.amount);
+        });
+    });
 
     describe("Transaction processing in hydra from basic to advanced", function () {
         it("Lovelace transfer from one address to another", async function () {
@@ -193,7 +200,14 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
             const unsignedTx = await meshTxBuilder
                 .txIn(utxos[0].input.txHash, utxos[0].input.outputIndex)
-                .txOut("addr_test1qzk0hl57jzwu2p0kpuqs48q2f7vty8efhcwh4l8wynckp4se2hwvvldt8r4c3cr7dcszlt2f7xs5ef2hydn25pugcgvs4843vd", [
+                // .txOut("addr_test1qzk0hl57jzwu2p0kpuqs48q2f7vty8efhcwh4l8wynckp4se2hwvvldt8r4c3cr7dcszlt2f7xs5ef2hydn25pugcgvs4843vd", [
+                //     {
+                //         unit: "lovelace",
+                //         quantity: "1000000",
+                //     },
+                // ])
+
+                .txOut("addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g", [
                     {
                         unit: "lovelace",
                         quantity: "1000000",
@@ -277,7 +291,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Asset transfer from one address to another", async function () {
-            // return;
+            return;
             await hydraProvider.connect();
             const walletAddress = await meshWallet.getChangeAddress();
             const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
@@ -306,12 +320,15 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
         it("Burn assets via forge script with CIP25", async function () {
             return;
+
             await hydraProvider.connect();
             const walletAddress = await meshWallet.getChangeAddress();
             const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
             const forgingScript = ForgeScript.withOneSignature(walletAddress);
             const policyId = resolveScriptHash(forgingScript);
             const assetName = stringToHex("Independence");
+
+            console.log(utxos[0].output);
 
             const unsignedTx = await meshTxBuilder
                 .mint("-1", policyId, assetName)
