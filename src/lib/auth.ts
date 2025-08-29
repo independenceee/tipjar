@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { isNil } from "lodash";
 import type { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from "next";
 import type { NextAuthOptions, User } from "next-auth"; // Import User để sử dụng
