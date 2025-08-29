@@ -4,10 +4,11 @@ import { Wallet } from "@meshsdk/core";
 declare module "next-auth" {
     interface User {
         id: string;
-        wallet: string; 
+        wallet: string;
+        address: string;
     }
     interface Session {
-        user: User; 
+        user: User;
     }
 }
 

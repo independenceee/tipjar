@@ -1,4 +1,3 @@
-import { checkSignature, DataSignature, generateNonce } from "@meshsdk/core";
 import { isNil } from "lodash";
 import type { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from "next";
 import type { NextAuthOptions, User } from "next-auth"; // Import User để sử dụng
@@ -7,38 +6,39 @@ import CredentialProvider from "next-auth/providers/credentials";
 
 interface Credentials {
     wallet: string;
+    address: string;
 }
 
 export const config: NextAuthOptions = {
     providers: [
         CredentialProvider({
-            name: "Credentials",
+            name: "credentials",
             credentials: {
-                data: { type: "text" }, // credentials.data là text (JSON string)
+                data: { type: "text" },
             },
             async authorize(credentials, req) {
                 if (!credentials?.data) {
-                    return null; // Trả về null thay vì throw, để NextAuth xử lý lỗi
+                    return null;
                 }
 
-                let parsedData: Credentials;
+                let parsed: Credentials;
                 try {
-                    parsedData = JSON.parse(credentials.data as string) as Credentials;
+                    parsed = JSON.parse(credentials.data as string) as Credentials;
                 } catch (error) {
                     console.error("Invalid JSON in credentials.data");
                     return null;
                 }
 
-                const { wallet } = parsedData;
+                const { wallet, address } = parsed;
 
-                // Validate các trường bắt buộc
                 if (isNil(wallet)) {
                     return null;
                 }
 
                 return {
-                    id: wallet,
+                    id: address,
                     wallet,
+                    address,
                 };
             },
         }),

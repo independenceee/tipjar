@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Footer from "~/components/footer";
 import Header from "~/components/header";
 import { ArrowRight, Warn } from "~/components/icons";
 import { Button } from "~/components/ui/button";
@@ -308,6 +309,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </aside>
+            <Footer />
         </main>
     );
 }

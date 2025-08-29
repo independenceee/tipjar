@@ -78,6 +78,7 @@ export const useWallet = create<WalletStoreType>((set, get) => ({
                 throw new Error(`Invalid network, please switch to ${APP_NETWORK}`);
             }
             const address = await browserWallet.getChangeAddress();
+
             if (address.length === 0) {
                 throw new Error("Cant get address");
             }
@@ -85,9 +86,11 @@ export const useWallet = create<WalletStoreType>((set, get) => ({
             if (stakeList.length === 0) {
                 throw new Error("Cant get stake address");
             }
+            console.log(session)
             const stakeAddress = stakeList[0];
 
             if (isNil(session)) {
+                console.log(session);
                 const { data, result, message } = await getNonceAddress(address);
                 if (!result || isNil(data)) {
                     throw new Error(message);
@@ -100,10 +103,9 @@ export const useWallet = create<WalletStoreType>((set, get) => ({
                     data: JSON.stringify({
                         wallet: name,
                         address: address,
-                        signature,
                     }),
                 });
-            } else if (session.user?.wallet !== address) {
+            } else if (session.user?.address !== address) {
                 throw new Error("Invalid address");
             } else {
                 const address = await browserWallet.getChangeAddress();
