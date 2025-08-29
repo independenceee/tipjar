@@ -7,9 +7,19 @@ import { images } from "~/public/images";
 import { routers } from "~/constants/routers";
 import Image from "next/image";
 import { ConnectWallet } from "~/components/connect-wallet";
+import { navbars } from "~/constants/navbars";
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const pathname = usePathname();
+
+    const isActiveNav = (href: string) => {
+        if (href === "/") return pathname === "/";
+        if (href === "/documents") return pathname.startsWith("/documents");
+        if (href === "/dashboard") return pathname.startsWith("/dashboard");
+        if (href === "/tipper") return pathname.startsWith("/tipper");
+        return false;
+    };
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     const closeMenu = () => setIsMenuOpen(false);
@@ -25,7 +35,26 @@ export default function Header() {
                             <h3 className="text-2xl font-bold text-gray-950 dark:text-gray-300 font-stretch-50%">Tipjar Hydra</h3>
                         </Link>
                     </section>
-
+                    <section className="hidden md:flex items-center space-x-8">
+                        {navbars.map((navbar) => {
+                            const isActive = isActiveNav(navbar.href);
+                            return (
+                                <Link
+                                    target={navbar.target}
+                                    href={navbar.href}
+                                    key={navbar.id}
+                                    className={`font-medium transition-colors duration-200 relative ${
+                                        isActive
+                                            ? "text-blue-600 dark:text-blue-400"
+                                            : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                                    }`}
+                                >
+                                    {navbar.title}
+                                    {isActive && <div className="absolute -bottom-2 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />}
+                                </Link>
+                            );
+                        })}
+                    </section>
                     <ConnectWallet />
 
                     {/* Mobile: Hamburger menu */}

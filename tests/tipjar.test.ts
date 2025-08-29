@@ -12,7 +12,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     beforeEach(async function () {
         hydraProvider = new HydraProvider({
-            httpUrl: "http://194.195.87.66:4001",
+            httpUrl: HYDRA_HTTP_URL,
         });
 
         blockfrostProvider = new BlockfrostProvider(BLOCKFROST_API_KEY);
@@ -102,7 +102,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Finalized Head completed, UTxOs returned to layer-1.", async function () {
-            return;
+            // return;
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {
