@@ -12,7 +12,7 @@
   },
   "validators": [
     {
-      "title": "placeholder.tipjar.mint",
+      "title": "tipjar.contract.mint",
       "redeemer": {
         "title": "_redeemer",
         "schema": {
@@ -23,7 +23,7 @@
       "hash": "61e32e15ca8e4b37687f007d13467d1ee84327d02aac9168d7e42a2c"
     },
     {
-      "title": "placeholder.tipjar.spend",
+      "title": "tipjar.contract.spend",
       "datum": {
         "title": "_datum",
         "schema": {
@@ -40,7 +40,7 @@
       "hash": "61e32e15ca8e4b37687f007d13467d1ee84327d02aac9168d7e42a2c"
     },
     {
-      "title": "placeholder.tipjar.else",
+      "title": "tipjar.contract.else",
       "redeemer": {
         "schema": {}
       },

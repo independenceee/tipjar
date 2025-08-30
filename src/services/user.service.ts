@@ -13,9 +13,7 @@ export const getNonceAddress = async (address: string) => {
         if (!/^[a-z0-9_]+$/.test(address)) {
             throw new Error("Invalid address");
         }
-
         const nonce = generateNonce("Signin with Hydra Tipjar");
-
         return {
             data: nonce,
             result: true,

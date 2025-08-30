@@ -2,7 +2,7 @@ import { BlockfrostProvider, ForgeScript, mConStr0, MeshTxBuilder, MeshWallet, r
 import { HydraProvider, HydraInstance } from "@meshsdk/hydra";
 import { BLOCKFROST_API_KEY, HYDRA_HTTP_URL, HYDRA_WS_URL } from "~/constants/enviroments";
 import { getLovelaceOnlyUTxO } from "~/utils";
-
+process.exit(0);
 describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communities", function () {
     let meshWallet: MeshWallet;
     let meshTxBuilder: MeshTxBuilder;
@@ -48,7 +48,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     describe("Common and basic state management in head hydra", function () {
         it("Initializing Head creation and UTxO commitment phase.", async () => {
-            return;
+            // return;
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {

@@ -3,7 +3,7 @@ import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
 import { HYDRA_HTTP_URL } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 
-export class TipjarAdapter {
+export class HydraAdapter {
     protected fetcher: IFetcher;
     protected meshWallet: MeshWallet;
     protected meshTxBuilder!: MeshTxBuilder;
