@@ -1,29 +1,30 @@
-import { CIP68_100, deserializeAddress, ForgeScript, mConStr0, mConStr1, metadataToCip68, resolveScriptHash, stringToHex } from "@meshsdk/core";
+import { CIP68_100, deserializeAddress, ForgeScript, mConStr0, resolveScriptHash, stringToHex } from "@meshsdk/core";
 import { MeshAdapter } from "~/adapter/mesh.adapter";
 import { APP_NETWORK } from "~/constants/enviroments";
+import { blockfrostProvider } from "~/providers/cardano";
+import { parseError } from "~/utils/error/parse-error";
 
 export class MeshService extends MeshAdapter {
     /**
      *
-     * @param param0 { assetName: string, metadata: Record<string, string>}
+     * @param param { assetName: string, metadata: Record<string, string>}
      * @returns unsignedTx
      */
     register = async ({ assetName, metadata }: { assetName: string; metadata: Record<string, string> }): Promise<string> => {
-        // return;
         const { utxos, collateral, walletAddress } = await this.getWalletForTx();
         const forgingScript = ForgeScript.withOneSignature(walletAddress);
         const policyId = resolveScriptHash(forgingScript);
-        const utxo = await this.getAddressUTXOAsset(this.spendAddress, policyId + CIP68_100(stringToHex(assetName)));
+        const utxo = await this.getAddressUTXOAsset(this.spendAddress, policyId + stringToHex(assetName));
 
         const unsignedTx = this.meshTxBuilder;
 
         if (!utxo) {
             unsignedTx
-                .mint("1", policyId, CIP68_100(stringToHex(assetName)))
+                .mint("1", policyId, stringToHex(assetName))
                 .mintingScript(forgingScript)
 
-                .txOut(this.spendAddress, [{ unit: policyId + CIP68_100(stringToHex(assetName)), quantity: "1" }])
-                .txOutInlineDatumValue([]);
+                .txOut(this.spendAddress, [{ unit: policyId + stringToHex(assetName), quantity: "1" }])
+                .txOutInlineDatumValue(mConStr0([JSON.stringify(metadata)]));
         } else {
             unsignedTx
                 .spendingPlutusScriptV3()
@@ -33,11 +34,11 @@ export class MeshService extends MeshAdapter {
                 .txInScript(this.spendScriptCbor)
                 .txOut(this.spendAddress, [
                     {
-                        unit: policyId + CIP68_100(stringToHex(assetName)),
+                        unit: policyId + stringToHex(assetName),
                         quantity: "1",
                     },
                 ])
-                .txOutInlineDatumValue(metadataToCip68(metadata));
+                .txOutInlineDatumValue(mConStr0([JSON.stringify(metadata)]));
         }
 
         unsignedTx
@@ -49,6 +50,11 @@ export class MeshService extends MeshAdapter {
         return await unsignedTx.complete();
     };
 
+    /**
+     *
+     * @param param
+     * @returns
+     */
     deregister = async ({ assetName }: { assetName: string }): Promise<string> => {
         const { utxos, collateral, walletAddress } = await this.getWalletForTx();
         const forgingScript = ForgeScript.withOneSignature(walletAddress);
@@ -75,5 +81,28 @@ export class MeshService extends MeshAdapter {
             .txInCollateral(collateral.input.txHash, collateral.input.outputIndex, collateral.output.amount, collateral.output.address)
             .setNetwork(APP_NETWORK);
         return await unsignedTx.complete();
+    };
+
+    submitTx = async ({ signTx }: { signTx: string }): Promise<{ data: string | null; result: boolean; message: string }> => {
+        try {
+            const txHash = await blockfrostProvider.submitTx(signTx);
+
+            await new Promise<void>((resolve, reject) => {
+                blockfrostProvider.onTxConfirmed(txHash, () => {
+                    resolve();
+                });
+            });
+            return {
+                data: txHash,
+                result: true,
+                message: "Transaction submitted successfully",
+            };
+        } catch (error) {
+            return {
+                data: null,
+                result: false,
+                message: parseError(error),
+            };
+        }
     };
 }

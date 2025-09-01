@@ -2,7 +2,7 @@ import { BlockfrostProvider, ForgeScript, mConStr0, MeshTxBuilder, MeshWallet, r
 import { HydraProvider, HydraInstance } from "@meshsdk/hydra";
 import { BLOCKFROST_API_KEY, HYDRA_HTTP_URL, HYDRA_WS_URL } from "~/constants/enviroments";
 import { getLovelaceOnlyUTxO } from "~/utils";
-process.exit(0);
+// process.exit(0);
 describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communities", function () {
     let meshWallet: MeshWallet;
     let meshTxBuilder: MeshTxBuilder;
@@ -12,7 +12,8 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     beforeEach(async function () {
         hydraProvider = new HydraProvider({
-            httpUrl: HYDRA_HTTP_URL,
+            httpUrl: "http://194.195.87.66:4001",
+            wsUrl: "ws://194.195.87.66:4001",
         });
 
         blockfrostProvider = new BlockfrostProvider(BLOCKFROST_API_KEY);
@@ -44,11 +45,11 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
     });
 
-    jest.setTimeout(60_000_000);
+    jest.setTimeout(60_000_000_000);
 
     describe("Common and basic state management in head hydra", function () {
         it("Initializing Head creation and UTxO commitment phase.", async () => {
-            // return;
+            return;
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {
@@ -84,7 +85,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Ready to fanout  Snapshot finalized, ready for layer-1 distribution.", async () => {
-            // return;
+            return;
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {
@@ -102,7 +103,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Finalized Head completed, UTxOs returned to layer-1.", async function () {
-            // return;
+            return;
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {
@@ -135,6 +136,13 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
                 hydraProvider.abort().catch((error: Error) => reject(error));
             });
+        });
+
+        it("Get status on head hydra when hydra interact", async function () {
+            return;
+            await hydraProvider.connect();
+            const status = await hydraProvider.get("head");
+            console.log(status);
         });
     });
 

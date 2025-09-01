@@ -1,5 +1,6 @@
 import { MeshWallet } from "@meshsdk/core";
 import { blockfrostProvider } from "~/providers/cardano";
+import { getCreaters } from "~/services/hydra.service";
 import { MeshService } from "~/services/mesh.service";
 
 describe("Save data and read data to participate in the cardano hydra process", function () {
@@ -24,7 +25,12 @@ describe("Save data and read data to participate in the cardano hydra process", 
         });
         const unsignedTx: string = await meshService.register({
             assetName: "Nguyen Duy Khanh",
-            metadata: {},
+            metadata: {
+                title: "Beyond Financial Sovereignty: Democratizing Treasury Administration",
+                image: "https://www.andamio.io/_next/image?url=%2Fblog%2F029-blog-cover.jpg&w=1920&q=75&dpl=dpl_GFazRiFpLrX9toggGgN9UoZDYapY",
+                author: "Nguyễn Duy Khánh",
+                tag: "Creator",
+            },
         });
 
         const signedTx = await meshWallet.signTx(unsignedTx, true);
@@ -37,7 +43,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
         });
     });
     test("Deregister", async function () {
-        // return;
+        return;
         const meshService: MeshService = new MeshService({
             meshWallet: meshWallet,
         });
@@ -53,5 +59,10 @@ describe("Save data and read data to participate in the cardano hydra process", 
                 resolve();
             });
         });
+    });
+
+    test("", async function () {
+        const assets = await getCreaters({});
+        console.log(assets);
     });
 });

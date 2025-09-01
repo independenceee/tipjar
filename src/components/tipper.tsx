@@ -7,14 +7,14 @@ export default function Tipper({
     author,
     datetime,
     slug,
-    tags = [],
+    tag = "Creator",
 }: {
     title: string;
     image: string | StaticImageData;
     author: string;
     datetime: string;
     slug: string;
-    tags?: Array<{ id: string; name: string }>;
+    tag?: string;
 }) {
     function cleanYoutubeUrl(url: string) {
         if (!url) return "";
@@ -42,7 +42,7 @@ export default function Tipper({
         : "";
     return (
         <div className="rounded-sm text-card-foreground px-5 py-3 group relative overflow-hidden border border-gray-200 dark:border-white/20 bg-white dark:bg-gray-800/50 backdrop-blur-sm shadow-xl transition-all duration-300 hover:border-gray-300 dark:hover:border-white/40 hover:shadow-2xl">
-            <Link className="block" href={`/blog/${slug}`}>
+            <Link className="block" href={`/tipper/${slug}`}>
                 <div className="relative aspect-video overflow-hidden">
                     {isYoutube && youtubeId ? (
                         <iframe
@@ -80,25 +80,13 @@ export default function Tipper({
                                     }}
                                 />
                             )}
-                            <div className="hidden h-full w-full bg-gray-100 flex items-center justify-center">
+                            <div className=" h-full w-full bg-gray-100 flex items-center justify-center">
                                 <span className="text-gray-400">Image not available</span>
                             </div>
                         </>
                     )}
                 </div>
 
-                {Array.isArray(tags) && tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3 mb-2">
-                        {tags.map((tag) => (
-                            <span
-                                key={tag.id}
-                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300"
-                            >
-                                {tag.name}
-                            </span>
-                        ))}
-                    </div>
-                )}
                 {/* <div className="mb-3">
           <span className="inline-block rounded-full bg-blue-600/20 px-3 py-1 text-xs font-medium text-blue-400 border border-blue-500/30">
             {action}

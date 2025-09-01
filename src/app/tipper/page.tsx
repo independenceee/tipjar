@@ -9,10 +9,11 @@ import { useQuery } from "@tanstack/react-query";
 import NotFound from "~/components/not-found";
 import Header from "~/components/header";
 import Footer from "~/components/footer";
+import { getCreaters } from "~/services/hydra.service";
 
 export default function TipperPage() {
-    const [currentPage, setCurrentPage] = useState(1);
-
+    const [page, setPage] = useState(1);
+    const { data, isLoading, error } = useQuery({ queryKey: ["getCreater"], queryFn: () => getCreaters({ limit: 12, page: page }) });
     return (
         <div className="min-h-screen bg-background text-foreground">
             <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-gray-950 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-white relative">
@@ -26,35 +27,34 @@ export default function TipperPage() {
                             />
                         </div>
 
-                        {[1].length === 0 ? (
+                        {error ? (
                             <div>
                                 <NotFound onClearFilters={() => {}} />
                             </div>
                         ) : (
                             <section className="grid gap-8 lg:grid-cols-2">
-                                {[].length === 0
-                                    ? Array.from({ length: 4 }).map((_, i) => (
+                                {isLoading
+                                    ? Array.from({ length: 6 }).map((_, i) => (
                                           <div key={i}>
                                               <TipperSkeleton />
                                           </div>
                                       ))
-                                    : [].map((post: any, index) => {
-                                          let imageUrl = "/images/common/loading.png";
+                                    : data?.data.map((result, index) => {
                                           return (
-                                              <div key={post.id}>
+                                              <div key={index}>
                                                   <Tipper
-                                                      image={imageUrl}
-                                                      title={post.title}
-                                                      author={post.author || "Admin"}
-                                                      slug={post.slug || post.id}
-                                                      datetime={new Date(post.createdAt).toLocaleString("en-GB", {
+                                                      image={result?.image || "/images/common/loading.png"}
+                                                      title={result?.title as string}
+                                                      author={result?.author as string}
+                                                      slug={result?.walletAddress as string}
+                                                      datetime={new Date(result?.datetime as string).toLocaleString("en-GB", {
                                                           day: "2-digit",
                                                           month: "2-digit",
                                                           year: "numeric",
                                                           hour: "2-digit",
                                                           minute: "2-digit",
                                                       })}
-                                                      tags={post.tags || []}
+                                                      tag={result?.tag as string}
                                                   />
                                               </div>
                                           );
@@ -63,7 +63,7 @@ export default function TipperPage() {
                         )}
 
                         <div>
-                            <Pagination currentPage={currentPage} totalPages={10} setCurrentPage={setCurrentPage} />
+                            <Pagination currentPage={page} totalPages={data?.totalPages as number} setCurrentPage={setPage} />
                         </div>
                     </div>
                 </main>
