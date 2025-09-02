@@ -1,7 +1,7 @@
 import { MeshWallet } from "@meshsdk/core";
 import { blockfrostProvider } from "~/providers/cardano";
-import { getCreaters } from "~/services/hydra.service";
-import { MeshService } from "~/services/mesh.service";
+import { getCreaters } from "~/txbuilders/hydra.txbuilder";
+import { MeshService } from "~/txbuilders/mesh.txbuilder";
 
 describe("Save data and read data to participate in the cardano hydra process", function () {
     let meshWallet: MeshWallet;

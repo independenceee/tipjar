@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import NotFound from "~/components/not-found";
 import Header from "~/components/header";
 import Footer from "~/components/footer";
-import { getCreaters } from "~/services/hydra.service";
+import { getCreaters } from "~/services/creator.service";
 
 export default function TipperPage() {
     const [page, setPage] = useState(1);
@@ -62,9 +62,7 @@ export default function TipperPage() {
                             </section>
                         )}
 
-                        <div>
-                            <Pagination currentPage={page} totalPages={data?.totalPages as number} setCurrentPage={setPage} />
-                        </div>
+                        <div>{data && <Pagination currentPage={page} totalPages={data?.totalPages as number} setCurrentPage={setPage} />}</div>
                     </div>
                 </main>
                 <Footer />

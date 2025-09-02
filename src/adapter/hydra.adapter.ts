@@ -21,7 +21,7 @@ export class HydraAdapter {
         this.hydraInstance = new HydraInstance({
             submitter: blockfrostProvider,
             provider: this.hydraProvider,
-            fetcher: this.fetcher,
+            fetcher: blockfrostProvider,
         });
 
         this.initialize();
