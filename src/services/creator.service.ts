@@ -9,52 +9,24 @@ import { parseError } from "~/utils/error/parse-error";
 
 export async function getCreaters({ query = "", page = 1, limit = 12 }: { query?: string; page?: number; limit?: number }) {
     try {
-        const assetsAddress: Array<{
-            policy_id: string;
-            asset_name: string;
-        }> = await koiosFetcher.fetchAssetsFromAddress(SPEND_ADDRESS);
+        const utxos = await blockfrostProvider.fetchAddressUTxOs(SPEND_ADDRESS);
+        const total = utxos.length;
 
-        const total = assetsAddress.length;
-
-        const assetsSlice: Array<{
-            policy_id: string;
-            asset_name: string;
-        }> = assetsAddress.slice((page - 1) * limit, page * limit);
+        const utxosSlice: Array<UTxO> = utxos.slice((page - 1) * limit, page * limit);
 
         const data = await Promise.all(
-            assetsSlice.map(async ({ policy_id, asset_name }) => {
-                const assetTxs: Array<{ tx_hash: string; block_time: string }> = await blockfrostFetcher.fetchAssetTransactions(
-                    policy_id + asset_name,
-                );
+            utxosSlice.map(async function (utxo) {
+                if (utxo.output.plutusData) {
+                    try {
+                        const buffer = Buffer.from(utxo.output.plutusData, "hex");
+                        const decoded = await cbor.decodeFirst(buffer);
+                        const datum = decoded.value[0].toString("utf-8");
+                        const parsed = JSON.parse(datum);
 
-                const txUtxos: UTxO[] = await blockfrostProvider.fetchUTxOs(assetTxs[0].tx_hash);
-                let walletAddress = "";
-                let plutusData: {
-                    title: string;
-                    author: string;
-                    image: string;
-                    tag: string;
-                };
-                for (const utxo of txUtxos) {
-                    if (utxo.output.address === SPEND_ADDRESS) {
-                        if (!isNil(utxo.output.plutusData)) {
-                            const buffer: Buffer = Buffer.from(utxo.output.plutusData, "hex");
-                            const datum = (await cbor.decodeFirst(buffer)).value[0].toString("utf-8");
-                            plutusData = JSON.parse(datum);
-                        }
-                    } else {
-                        walletAddress = utxo.output.address;
+                        return parsed;
+                    } catch (error) {
+                        throw new Error(String(error));
                     }
-                }
-                if (!isNil(plutusData!)) {
-                    return {
-                        walletAddress: walletAddress,
-                        datetime: assetTxs[0].block_time,
-                        title: plutusData.title,
-                        image: plutusData.image,
-                        author: plutusData.author,
-                        tag: plutusData.tag,
-                    };
                 }
             }),
         );
@@ -73,4 +45,48 @@ export async function getCreaters({ query = "", page = 1, limit = 12 }: { query?
     }
 }
 
-export async function getCreator() {}
+export async function getCreator({ walletAddress }: { walletAddress: string }) {
+    try {
+        if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
+            return {
+                data: null,
+                message: "Invalid wallet address provided",
+            };
+        }
+        const utxos = await blockfrostProvider.fetchAddressUTxOs(SPEND_ADDRESS);
+
+        for (const utxo of utxos) {
+            if (!utxo.output.plutusData) {
+                continue;
+            }
+
+            try {
+                const buffer = Buffer.from(utxo.output.plutusData, "hex");
+                const decoded = await cbor.decodeFirst(buffer);
+                const datum = decoded.value[0].toString("utf-8");
+                const parsedDatum = JSON.parse(datum);
+
+                if (parsedDatum.walletAddress === walletAddress) {
+                    return {
+                        data: parsedDatum,
+                        message: "Successfully retrieved creator data",
+                    };
+                }
+            } catch (decodeError) {
+                console.error(`Error decoding UTXO: ${decodeError}`);
+                continue;
+            }
+        }
+
+        // If no matching creator is found
+        return {
+            data: null,
+            message: "No matching creator found",
+        };
+    } catch (error) {
+        return {
+            data: null,
+            message: `Error fetching creator data: ${error instanceof Error ? error.message : "Unknown error"}`,
+        };
+    }
+}

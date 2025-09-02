@@ -1,4 +1,5 @@
 import { HydraAdapter } from "~/adapter/hydra.adapter";
+import { getLovelaceOnlyUTxO } from "~/utils";
 
 export class HydraTxbuilder extends HydraAdapter {
     /**
@@ -23,5 +24,16 @@ export class HydraTxbuilder extends HydraAdapter {
         } catch (error) {
             console.log(error);
         }
+    };
+
+    /**
+     *
+     * @returns unsignedTx
+     */
+    commit = async (): Promise<string> => {
+        await this.hydraProvider.connect();
+        const utxos = await this.meshWallet.getUtxos();
+        const utxoOnlyLovelace = getLovelaceOnlyUTxO(utxos);
+        return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
     };
 }

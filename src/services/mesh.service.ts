@@ -34,7 +34,11 @@ export const register = async function ({
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({ meshWallet: meshWallet });
         const unsignedTx = await meshTxBuilder.register({
             assetName: assetName,
-            metadata: metadata,
+            metadata: {
+                walletAddress: walletAddress,
+                datetime: Date.now().toString(),
+                ...metadata,
+            },
         });
 
         return unsignedTx;

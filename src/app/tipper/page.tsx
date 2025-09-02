@@ -47,7 +47,7 @@ export default function TipperPage() {
                                                       title={result?.title as string}
                                                       author={result?.author as string}
                                                       slug={result?.walletAddress as string}
-                                                      datetime={new Date(result?.datetime as string).toLocaleString("en-GB", {
+                                                      datetime={new Date(Number(result?.datetime)).toLocaleString("en-GB", {
                                                           day: "2-digit",
                                                           month: "2-digit",
                                                           year: "numeric",

@@ -14,7 +14,7 @@ export function getLovelaceOnlyUTxO(utxos: UTxO[]): UTxO {
             amount.length === 1 &&
             amount[0].unit === "lovelace" &&
             typeof amount[0].quantity === "string" &&
-            Number(amount[0].quantity) > 1_000_000_000
+            Number(amount[0].quantity) >= 10_000_000
         );
     })[0];
 }
