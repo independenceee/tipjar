@@ -1,5 +1,6 @@
 import { IFetcher, MeshTxBuilder, MeshWallet, UTxO } from "@meshsdk/core";
 import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
+import { DECIMAL_PLACE } from "~/constants/common";
 import { blockfrostProvider } from "~/providers/cardano";
 
 export class HydraAdapter {
@@ -32,5 +33,16 @@ export class HydraAdapter {
         });
     };
 
-   
+    protected getLovelaceOnlyUTxO = (utxos: UTxO[], quantity = DECIMAL_PLACE) => {
+        return utxos.filter((utxo) => {
+            const amount = utxo.output.amount;
+            return (
+                Array.isArray(amount) &&
+                amount.length === 1 &&
+                amount[0].unit === "lovelace" &&
+                typeof amount[0].quantity === "string" &&
+                Number(amount[0].quantity) >= quantity
+            );
+        })[0];
+    };
 }

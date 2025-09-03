@@ -2,9 +2,8 @@
 
 import { UTxO } from "@meshsdk/core";
 import cbor from "cbor";
-import { isNil } from "lodash";
 import { SPEND_ADDRESS } from "~/constants/enviroments";
-import { blockfrostFetcher, blockfrostProvider, koiosFetcher } from "~/providers/cardano";
+import { blockfrostProvider } from "~/providers/cardano";
 import { parseError } from "~/utils/error/parse-error";
 
 export async function getCreaters({ query = "", page = 1, limit = 12 }: { query?: string; page?: number; limit?: number }) {

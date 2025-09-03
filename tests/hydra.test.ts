@@ -49,7 +49,8 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     describe("Common and basic state management in head hydra", function () {
         it("Initializing Head creation and UTxO commitment phase.", async () => {
-            return;
+            // return;
+
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {
@@ -208,13 +209,6 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
             const unsignedTx = await meshTxBuilder
                 .txIn(utxos[0].input.txHash, utxos[0].input.outputIndex)
-                // .txOut("addr_test1qzk0hl57jzwu2p0kpuqs48q2f7vty8efhcwh4l8wynckp4se2hwvvldt8r4c3cr7dcszlt2f7xs5ef2hydn25pugcgvs4843vd", [
-                //     {
-                //         unit: "lovelace",
-                //         quantity: "1000000",
-                //     },
-                // ])
-
                 .txOut("addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g", [
                     {
                         unit: "lovelace",
