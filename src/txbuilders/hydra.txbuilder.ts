@@ -88,4 +88,31 @@ export class HydraTxbuilder extends HydraAdapter {
 
         return await unsignedTx.complete();
     };
+
+    /**
+     * @description Merge UTxOs into one to be able to decommit
+     * @returns unsignedTx
+     */
+    merge = async () => {
+        await this.hydraProvider.connect();
+        const utxos = await this.hydraProvider.fetchUTxOs(await this.meshWallet.getChangeAddress());
+        const unsignedTx = this.meshTxBuilder;
+        const total = utxos.reduce((acc, utxo) => {
+            unsignedTx.txIn(utxo.input.txHash, utxo.input.outputIndex);
+            const lovelace = utxo.output.amount.find((amount) => amount.unit === "lovelace");
+            return acc + (lovelace ? Number(lovelace.quantity) : 0);
+        }, 0);
+        unsignedTx
+            .txOut(await this.meshWallet.getChangeAddress(), [
+                {
+                    unit: "lovelace",
+                    quantity: String(total),
+                },
+            ])
+            .changeAddress(await this.meshWallet.getChangeAddress())
+            .selectUtxosFrom(utxos)
+            .setFee(String(0))
+            .setNetwork(APP_NETWORK);
+        return await unsignedTx.complete();
+    };
 }
