@@ -12,8 +12,8 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     beforeEach(async function () {
         hydraProvider = new HydraProvider({
-            httpUrl: "http://194.195.87.66:4001",
-            wsUrl: "ws://194.195.87.66:4001",
+            httpUrl: "http://194.195.87.66:4002",
+            wsUrl: "ws://194.195.87.66:4002",
         });
 
         blockfrostProvider = new BlockfrostProvider(BLOCKFROST_API_KEY);
@@ -30,8 +30,8 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
             submitter: blockfrostProvider,
             key: {
                 type: "mnemonic",
-                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
-                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
             },
         });
 
@@ -49,7 +49,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     describe("Common and basic state management in head hydra", function () {
         it("Initializing Head creation and UTxO commitment phase.", async () => {
-            // return;
+            return;
 
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
@@ -162,24 +162,31 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("2- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
-            return;
+            // return;
             await hydraProvider.connect();
             const utxos = await meshWallet.getUtxos();
             const utxoOnlyLovelace = getLovelaceOnlyUTxO(utxos);
             console.log(utxoOnlyLovelace);
+
             const walletAddress = await meshWallet.getChangeAddress();
             const unsignedTx = await meshTxBuilder
                 .txIn(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex)
-                .txOut("", utxoOnlyLovelace.output.amount)
+                .txOut(await meshWallet.getChangeAddress(), utxoOnlyLovelace.output.amount)
                 .changeAddress(walletAddress)
                 .selectUtxosFrom(utxos)
                 .setNetwork("preview")
                 .complete();
-            const commitSignedTx = await meshWallet.signTx(unsignedTx, true);
-            const commitTxHash = await meshWallet.submitTx(commitSignedTx);
+
+            const unsignedCommitTx = await hydraInstance.commitBlueprint(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex, {
+                cborHex: unsignedTx,
+                description: "Commit Funds",
+                type: "Tx ConwayEra",
+            });
+
+            const signedCommitTx = await meshWallet.signTx(unsignedCommitTx, true);
+            const commitTxHash = await meshWallet.submitTx(signedCommitTx);
             console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
-            const snapshotUtxos = await hydraProvider.subscribeSnapshotUtxo();
-            console.log(snapshotUtxos);
+            expect(typeof commitTxHash).toBe("string");
         });
 
         it("1- Decommit UTXOs from the Hydra head, withdrawing funds back to the Cardano main chain.", async () => {

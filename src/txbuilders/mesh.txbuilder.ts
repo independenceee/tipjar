@@ -1,8 +1,6 @@
 import { deserializeAddress, ForgeScript, mConStr0, resolveScriptHash, stringToHex } from "@meshsdk/core";
 import { MeshAdapter } from "~/adapter/mesh.adapter";
 import { APP_NETWORK } from "~/constants/enviroments";
-import { blockfrostProvider } from "~/providers/cardano";
-import { parseError } from "~/utils/error/parse-error";
 
 export class MeshTxBuilder extends MeshAdapter {
     /**
@@ -52,8 +50,8 @@ export class MeshTxBuilder extends MeshAdapter {
 
     /**
      *
-     * @param param
-     * @returns
+     * @param param { assetName: string }
+     * @returns unsignedTx
      */
     deregister = async ({ assetName }: { assetName: string }): Promise<string> => {
         const { utxos, collateral, walletAddress } = await this.getWalletForTx();

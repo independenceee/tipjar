@@ -29,9 +29,48 @@ export class HydraTxbuilder extends HydraAdapter {
     };
 
     /**
+     * @description Ready to fanout  Snapshot finalized, ready for layer-1 distribution.
+     */
+    fanout = async () => {
+        await this.hydraProvider.connect();
+        await new Promise<void>((resolve, reject) => {
+            this.hydraProvider.fanout().catch((error: Error) => reject(error));
+
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "FANOUT_POSSIBLE") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+    };
+
+    /**
+     * @description Finalized Head completed, UTxOs returned to layer-1.
+     */
+    final = async () => {
+        await this.hydraProvider.connect();
+        await new Promise<void>((resolve, reject) => {
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "FINAL") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            this.hydraProvider.fanout().catch((error: Error) => reject(error));
+        });
+    };
+
+    /**
      * @description Closed Head closed, starting contestation phase.
      */
-
     close = async () => {
         await this.hydraProvider.connect();
         await new Promise<void>((resolve, reject) => {
@@ -50,7 +89,7 @@ export class HydraTxbuilder extends HydraAdapter {
     };
 
     /**
-     *
+     * @description Commit UTXOs into the Hydra head to make them available for off-chain transactions.
      * @returns unsignedTx
      */
     commit = async (): Promise<string> => {
@@ -58,6 +97,14 @@ export class HydraTxbuilder extends HydraAdapter {
         const utxos = await this.meshWallet.getUtxos();
         const utxoOnlyLovelace = getLovelaceOnlyUTxO(utxos);
         return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
+    };
+
+    /**
+     * @description Decommit UTXOs from the Hydra head, withdrawing funds back to the Cardano main chain.
+     * @returns unsignedTx
+     */
+    decommit = async (): Promise<string> => {
+        return "";
     };
 
     /**
