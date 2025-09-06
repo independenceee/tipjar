@@ -95,7 +95,9 @@ export class HydraTxbuilder extends HydraAdapter {
     commit = async (): Promise<string> => {
         await this.hydraProvider.connect();
         const utxos = await this.meshWallet.getUtxos();
+        console.log(utxos);
         const utxoOnlyLovelace = getLovelaceOnlyUTxO(utxos);
+        console.log(utxoOnlyLovelace);
         return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
     };
 

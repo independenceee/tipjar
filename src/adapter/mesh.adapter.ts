@@ -33,6 +33,10 @@ export class MeshAdapter {
     protected meshWallet: MeshWallet;
     protected meshTxBuilder: MeshTxBuilder;
 
+    /**
+     * 
+     * @param param0 
+     */
     constructor({ meshWallet = null! }: { meshWallet: MeshWallet }) {
         this.meshWallet = meshWallet;
         this.fetcher = blockfrostProvider;
@@ -69,6 +73,10 @@ export class MeshAdapter {
         this.policyId = resolveScriptHash(this.mintScriptCbor, "V3");
     }
 
+    /**
+     * @description
+     * @returns
+     */
     protected getWalletForTx = async (): Promise<{
         utxos: UTxO[];
         collateral: UTxO;

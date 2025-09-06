@@ -7,13 +7,13 @@ import { ChangeEvent, useState } from "react";
 import Footer from "~/components/footer";
 import Header from "~/components/header";
 import { Warn } from "~/components/icons";
-import Loading from "~/components/loading";
 import Tipper from "~/components/tipper";
 import { Button } from "~/components/ui/button";
 import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images*";
 import { getCreator } from "~/services/creator.service";
 import { register, submitTx } from "~/services/mesh.service";
+import { commit } from "~/services/hydra.service";
 
 export default function Dashboard() {
     const { address, signTx } = useWallet();
@@ -35,10 +35,15 @@ export default function Dashboard() {
 
     const handleSubmit = async function () {
         const unsignedTx = await register({ walletAddress: address as string, assetName: form.author, metadata: { ...form } });
-        setLoading(!loading);
         const signedTx = await signTx(unsignedTx as string);
         const { data: txHash, result: txResult, message: txMessage } = await submitTx({ signedTx: signedTx });
-        setLoading(!loading);
+    };
+
+    const commitFund = async function () {
+        const unsignedTx = await commit({ walletAddress: address as string, isCreator: true });
+        console.log(unsignedTx);
+        const signedTx = await signTx(unsignedTx as string);
+        const { data: txHash, result: txResult, message: txMessage } = await submitTx({ signedTx: signedTx });
     };
 
     const { data, isLoading } = useQuery({ queryKey: [""], queryFn: () => getCreator({ walletAddress: address as string }) });
@@ -178,13 +183,16 @@ export default function Dashboard() {
                                 <Warn />
                                 <div className="flex-1">
                                     <h5 className="mb-1 font-medium leading-none tracking-tight text-blue-700 dark:text-blue-200">
-                                        You must verify your identity to withdraw funds.
+                                        You need to commit some ada to register as a creator.
                                     </h5>
                                     <div className="text-sm [&amp;_p]:leading-relaxed text-blue-600 dark:text-blue-300">Status: created</div>
                                 </div>
-                                <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center">
-                                    Verify KYC
-                                </Button>
+                                <button
+                                    onClick={commitFund}
+                                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center"
+                                >
+                                    Register
+                                </button>
                             </div>
                         </section>
 
