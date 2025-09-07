@@ -1,14 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
-import Image from "next/image";
-import { ChangeEvent, useState } from "react";
+import { useCallback, useState } from "react";
 import Footer from "~/components/footer";
 import Header from "~/components/header";
 import { Warn } from "~/components/icons";
 import Tipper from "~/components/tipper";
-import { Button } from "~/components/ui/button";
 import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images*";
 import { getCreator } from "~/services/creator.service";
@@ -17,36 +16,51 @@ import { commit } from "~/services/hydra.service";
 
 export default function Dashboard() {
     const { address, signTx } = useWallet();
-    const [loading, setLoading] = useState<boolean>(false);
-
     const [form, setForm] = useState({
         title: "",
         description: "",
         author: "",
         image: "",
     });
-    const handleChange = (event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>) => {
+
+    const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = event.target;
-        setForm((previous) => ({
-            ...previous,
-            [name]: value,
-        }));
-    };
+        setForm((prev) => ({ ...prev, [name]: value }));
+    }, []);
 
-    const handleSubmit = async function () {
-        const unsignedTx = await register({ walletAddress: address as string, assetName: form.author, metadata: { ...form } });
-        const signedTx = await signTx(unsignedTx as string);
-        const { data: txHash, result: txResult, message: txMessage } = await submitTx({ signedTx: signedTx });
-    };
+    const handleSubmit = useCallback(async () => {
+        try {
+            const unsignedTx = await register({
+                walletAddress: address as string,
+                assetName: form.author,
+                metadata: { ...form },
+            });
+            console.log("Unsigned TX:", unsignedTx);
 
-    const commitFund = async function () {
-        const unsignedTx = await commit({ walletAddress: address as string, isCreator: true });
-        console.log(unsignedTx);
-        const signedTx = await signTx(unsignedTx as string);
-        const { data: txHash, result: txResult, message: txMessage } = await submitTx({ signedTx: signedTx });
-    };
+            const signedTx = await signTx(unsignedTx as string);
+            await submitTx({ signedTx });
+        } catch (error) {
+            console.error("TxSignError:", error);
+            // Optionally show error to user
+        }
+    }, [address, form, signTx]);
 
-    const { data, isLoading } = useQuery({ queryKey: [""], queryFn: () => getCreator({ walletAddress: address as string }) });
+    const commitFund = useCallback(async () => {
+        try {
+            const unsignedTx = await commit({ walletAddress: address as string, isCreator: true });
+            const signedTx = await signTx(unsignedTx as string);
+            await submitTx({ signedTx });
+            // Optionally show success message
+        } catch (error) {
+            // Optionally show error message
+            console.error(error);
+        }
+    }, [address, signTx]);
+
+    const { data } = useQuery({
+        queryKey: ["creator", address],
+        queryFn: () => getCreator({ walletAddress: address as string }),
+    });
 
     return (
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">

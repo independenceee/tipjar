@@ -34,8 +34,8 @@ export class MeshAdapter {
     protected meshTxBuilder: MeshTxBuilder;
 
     /**
-     * 
-     * @param param0 
+     * @description MeshAdapter constructor
+     * @param param0 { meshWallet: MeshWallet }
      */
     constructor({ meshWallet = null! }: { meshWallet: MeshWallet }) {
         this.meshWallet = meshWallet;
@@ -83,11 +83,12 @@ export class MeshAdapter {
         walletAddress: string;
     }> => {
         const utxos = await this.meshWallet.getUtxos();
-        const collaterals = await this.meshWallet.getCollateral();
+        const collaterals =
+            (await this.meshWallet.getCollateral()).length === 0 ? [await this.getCollateral()] : await this.meshWallet.getCollateral();
         const walletAddress = await this.meshWallet.getChangeAddress();
         if (!utxos || utxos.length === 0) throw new Error("No UTXOs found in getWalletForTx method.");
 
-        if (!collaterals || collaterals.length === 0) throw new Error("No collateral found in getWalletForTx method.");
+        if (!collaterals || collaterals.length === 0) this.meshWallet.createCollateral();
 
         if (!walletAddress) throw new Error("No wallet address found in getWalletForTx method.");
 
@@ -113,5 +114,19 @@ export class MeshAdapter {
 
     protected getAddressUTXOAssets = async (address: string, unit: string) => {
         return await this.fetcher.fetchAddressUTxOs(address, unit);
+    };
+
+    protected getCollateral = async (): Promise<UTxO> => {
+        const utxos = await this.meshWallet.getUtxos();
+        return utxos.filter((utxo) => {
+            const amount = utxo.output.amount;
+            return (
+                Array.isArray(amount) &&
+                amount.length === 1 &&
+                amount[0].unit === "lovelace" &&
+                typeof amount[0].quantity === "string" &&
+                Number(amount[0].quantity) >= 5_000_000
+            );
+        })[0];
     };
 }

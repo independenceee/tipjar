@@ -10,6 +10,7 @@ export class MeshTxBuilder extends MeshAdapter {
      */
     register = async ({ assetName, metadata }: { assetName: string; metadata: Record<string, string> }): Promise<string> => {
         const { utxos, collateral, walletAddress } = await this.getWalletForTx();
+
         const forgingScript = ForgeScript.withOneSignature(walletAddress);
         const policyId = resolveScriptHash(forgingScript);
         const utxo = await this.getAddressUTXOAsset(this.spendAddress, policyId + stringToHex(assetName));
