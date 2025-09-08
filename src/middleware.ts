@@ -1,9 +1,4 @@
-// import { auth } from "./lib/auth";
-
-export async function middleware() {
-    // const session = await auth();
-    // return;
-}
+export async function middleware() {}
 
 export const config = {
     matcher: "/dashboard/:path*",

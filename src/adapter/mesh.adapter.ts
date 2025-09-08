@@ -19,16 +19,12 @@ import { APP_NETWORK_ID } from "~/constants/enviroments";
 export class MeshAdapter {
     public policyId: string;
     public spendAddress: string;
-
     protected spendCompileCode: string;
     protected mintCompileCode: string;
-
     protected spendScriptCbor: string;
     protected mintScriptCbor: string;
-
     protected spendScript: PlutusScript;
     protected mintScript: PlutusScript;
-
     protected fetcher: IFetcher;
     protected meshWallet: MeshWallet;
     protected meshTxBuilder: MeshTxBuilder;

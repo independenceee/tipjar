@@ -4,6 +4,9 @@ import { DECIMAL_PLACE } from "~/constants/common";
 import { APP_NETWORK } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 
+/**
+ * 
+ */
 export class HydraAdapter {
     protected fetcher: IFetcher;
     protected meshWallet: MeshWallet;
