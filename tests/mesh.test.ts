@@ -12,7 +12,9 @@ describe("Save data and read data to participate in the cardano hydra process", 
             submitter: blockfrostProvider,
             key: {
                 type: "mnemonic",
-                words: process.env.APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.APP_MNEMONIC?.split(" ") || [],
+                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
             },
         });
     });
@@ -50,7 +52,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
             meshWallet: meshWallet,
         });
         const unsignedTx: string = await meshTxBuilder.deregister({
-            assetName: "Nguyen Duy Khanh",
+            assetName: "Alice",
         });
 
         const signedTx = await meshWallet.signTx(unsignedTx, true);

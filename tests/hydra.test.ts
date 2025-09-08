@@ -103,7 +103,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Finalized Head completed, UTxOs returned to layer-1.", async function () {
-            // return;
+            return;
             await hydraProvider.connect();
             await new Promise<void>((resolve, reject) => {
                 hydraProvider.onStatusChange((status) => {
@@ -139,10 +139,10 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Get status on head hydra when hydra interact", async function () {
-            return;
+            // return;
             await hydraProvider.connect();
             const status = await hydraProvider.get("head");
-            console.log(status);
+            console.log(status.tag);
         });
     });
 

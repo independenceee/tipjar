@@ -3,7 +3,7 @@ import { DECIMAL_PLACE } from "~/constants/common";
 import { APP_NETWORK } from "~/constants/enviroments";
 import { getLovelaceOnlyUTxO } from "~/utils";
 
-export class HydraTxbuilder extends HydraAdapter {
+export class HydraTxBuilder extends HydraAdapter {
     /**
      * @description Initializing Head creation and UTxO commitment phase.
      */

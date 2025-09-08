@@ -7,7 +7,7 @@ import { blockfrostProvider } from "~/providers/cardano";
 import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 import { parseError } from "~/utils/error/parse-error";
 
-export const register = async function ({
+export const signup = async function ({
     walletAddress,
     assetName,
     metadata,
@@ -70,5 +70,3 @@ export const submitTx = async ({ signedTx }: { signedTx: string }): Promise<{ da
         };
     }
 };
-
-

@@ -1,92 +1,66 @@
 "use client";
 
+import 
 import Image from "next/image";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Footer from "~/components/footer";
 import Header from "~/components/header";
 import { Warn } from "~/components/icons";
 import Tipper from "~/components/tipper";
 import { useWallet } from "~/hooks/use-wallet";
-import { images } from "~/public/images";
+import { images } from "~/public/images*";
 import { getCreator } from "~/services/creator.service";
-import { signup, submitTx } from "~/services/mesh.service";
-import { commit, getHeadStatus } from "~/services/hydra.service";
-import { creatorFormSchema } from "~/lib/schema";
-import { z } from "zod";
-
-type Form = z.infer<typeof creatorFormSchema>;
+import { register, submitTx } from "~/services/mesh.service";
+import { commit } from "~/services/hydra.service";
 
 export default function Dashboard() {
     const { address, signTx } = useWallet();
-    const [loading, setLoading] = useState(false);
-    const queryClient = useQueryClient();
-
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting },
-        watch,
-    } = useForm<Form>({
-        resolver: zodResolver(creatorFormSchema),
-        defaultValues: {
-            title: "",
-            description: "",
-            author: "",
-            image: "",
-        },
+    const [form, setForm] = useState({
+        title: "",
+        description: "",
+        author: "",
+        image: "",
     });
 
-    const formValues = watch();
+    const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = event.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+    }, []);
 
-    const onSubmit = useCallback(
-        async (data: Form) => {
-            try {
-                setLoading(!loading);
-                const unsignedTx = await signup({
-                    walletAddress: address as string,
-                    assetName: data.author,
-                    metadata: { ...data },
-                });
+    const handleSubmit = useCallback(async () => {
+        try {
+            const unsignedTx = await register({
+                walletAddress: address as string,
+                assetName: form.author,
+                metadata: { ...form },
+            });
+            console.log("Unsigned TX:", unsignedTx);
 
-                const signedTx = await signTx(unsignedTx as string);
-                await submitTx({ signedTx });
-
-                // Kiểm tra lại trạng thái creator bằng cách invalidate query
-                await queryClient.invalidateQueries({ queryKey: ["creator", address] });
-            } catch (error) {
-                console.error("TxSignError:", error);
-            } finally {
-                setLoading(false);
-            }
-        },
-        [address, signTx, queryClient],
-    );
+            const signedTx = await signTx(unsignedTx as string);
+            await submitTx({ signedTx });
+        } catch (error) {
+            console.error("TxSignError:", error);
+            // Optionally show error to user
+        }
+    }, [address, form, signTx]);
 
     const commitFund = useCallback(async () => {
         try {
             const unsignedTx = await commit({ walletAddress: address as string, isCreator: true });
             const signedTx = await signTx(unsignedTx as string);
             await submitTx({ signedTx });
-            await queryClient.invalidateQueries({ queryKey: ["creator", address] });
+            // Optionally show success message
         } catch (error) {
+            // Optionally show error message
             console.error(error);
         }
-    }, [address, signTx, queryClient]);
-
-    const handleWithdraw = useCallback(async function () {}, [address, signTx, queryClient]);
+    }, [address, signTx]);
 
     const { data } = useQuery({
         queryKey: ["creator", address],
         queryFn: () => getCreator({ walletAddress: address as string }),
-    });
-
-    const { data: headStatus } = useQuery({
-        queryKey: ["status"],
-        queryFn: () => getHeadStatus(),
     });
 
     return (
@@ -103,9 +77,7 @@ export default function Dashboard() {
                                         <h5 className="mb-1 font-medium leading-none tracking-tight text-blue-700 dark:text-blue-200">
                                             You must verify your identity to withdraw funds.
                                         </h5>
-                                        <div className="text-sm [&_p]:leading-relaxed text-blue-600 dark:text-blue-300">
-                                            Status: {headStatus?.data || "Idle"}
-                                        </div>
+                                        <div className="text-sm [&amp;_p]:leading-relaxed text-blue-600 dark:text-blue-300">Status: created</div>
                                     </div>
                                 </div>
                             </section>
@@ -113,7 +85,7 @@ export default function Dashboard() {
                                 <div className="space-y-6 flex flex-col">
                                     <div className="flex items-center justify-center">
                                         <div className="mx-auto w-full">
-                                            <form onSubmit={handleSubmit(onSubmit)}>
+                                            <div>
                                                 <div className="mb-5">
                                                     <label
                                                         htmlFor="title"
@@ -122,14 +94,13 @@ export default function Dashboard() {
                                                         Title
                                                     </label>
                                                     <input
-                                                        {...register("title")}
+                                                        onChange={handleChange}
                                                         type="text"
+                                                        name="title"
                                                         id="title"
                                                         placeholder="Enter your title"
                                                         className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:focus:border-[#6A64F1]"
-                                                        disabled={isSubmitting}
                                                     />
-                                                    {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
                                                 </div>
                                                 <div className="mb-5">
                                                     <label
@@ -139,14 +110,13 @@ export default function Dashboard() {
                                                         Description
                                                     </label>
                                                     <textarea
-                                                        {...register("description")}
+                                                        onChange={handleChange}
+                                                        name="description"
                                                         id="description"
                                                         rows={6.5}
                                                         placeholder="Enter your description"
                                                         className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:focus:border-[#6A64F1]"
-                                                        disabled={isSubmitting}
                                                     />
-                                                    {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
                                                 </div>
                                                 <div className="-mx-3 flex flex-wrap">
                                                     <div className="w-full px-3 sm:w-1/2">
@@ -158,14 +128,13 @@ export default function Dashboard() {
                                                                 Author
                                                             </label>
                                                             <input
-                                                                {...register("author")}
+                                                                onChange={handleChange}
                                                                 type="text"
-                                                                id="author"
+                                                                name="author"
                                                                 placeholder="Enter your author"
+                                                                id="author"
                                                                 className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:focus:border-[#6A64F1]"
-                                                                disabled={isSubmitting}
                                                             />
-                                                            {errors.author && <p className="text-red-500 text-sm mt-1">{errors.author.message}</p>}
                                                         </div>
                                                     </div>
                                                     <div className="w-full px-3 sm:w-1/2">
@@ -177,36 +146,34 @@ export default function Dashboard() {
                                                                 Image
                                                             </label>
                                                             <input
-                                                                {...register("image")}
+                                                                onChange={handleChange}
                                                                 type="text"
+                                                                name="image"
                                                                 id="image"
-                                                                placeholder="Enter your image URL"
+                                                                placeholder="Enter your image"
                                                                 className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:focus:border-[#6A64F1]"
-                                                                disabled={isSubmitting}
                                                             />
-                                                            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image.message}</p>}
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <button
-                                                        type="submit"
-                                                        disabled={isSubmitting}
-                                                        className="hover:shadow-form w-full rounded-md bg-[#6A64F1] py-3 px-8 text-center text-base font-semibold text-white outline-none dark:bg-[#6A64F1] dark:hover:bg-[#5a54d1] disabled:opacity-50"
+                                                        onClick={handleSubmit}
+                                                        className="hover:shadow-form w-full rounded-md bg-[#6A64F1] py-3 px-8 text-center text-base font-semibold text-white outline-none dark:bg-[#6A64F1] dark:hover:bg-[#5a54d1]"
                                                     >
-                                                        {isSubmitting ? "Submitting..." : "Register"}
+                                                        Register
                                                     </button>
                                                 </div>
-                                            </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="space-y-6 flex flex-col">
                                     <div className="h-full min-h-[calc(100%)]">
                                         <Tipper
-                                            title={formValues.title || "Open source dynamic assets (Token/NFT) generator (CIP68)"}
-                                            image={formValues.image || images.logo}
-                                            author={formValues.author || "Cardano2vn"}
+                                            title={form.title || "Open source dynamic assets (Token/NFT) generator (CIP68)"}
+                                            image={form.image || images.logo}
+                                            author={form.author || "Cardano2vn"}
                                             slug={""}
                                             datetime={new Date(Date.now()).toLocaleString("en-GB", {
                                                 day: "2-digit",
@@ -233,19 +200,17 @@ export default function Dashboard() {
                                     <h5 className="mb-1 font-medium leading-none tracking-tight text-blue-700 dark:text-blue-200">
                                         You need to commit some ada to register as a creator.
                                     </h5>
-                                    <div className="text-sm [&_p]:leading-relaxed text-blue-600 dark:text-blue-300">
-                                        Status: {headStatus?.data || "Idle"}
-                                    </div>
+                                    <div className="text-sm [&amp;_p]:leading-relaxed text-blue-600 dark:text-blue-300">Status: created</div>
                                 </div>
                                 <button
                                     onClick={commitFund}
-                                    disabled={isSubmitting}
-                                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center"
+                                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center"
                                 >
-                                    {isSubmitting ? "Submitting..." : "Register"}
+                                    Register
                                 </button>
                             </div>
                         </section>
+
                         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-6 flex flex-col">
                                 <div className="rounded-[24px] text-card-foreground overflow-hidden border border-blue-200/50 dark:border-blue-900/30 bg-white dark:bg-slate-900">
@@ -274,7 +239,7 @@ export default function Dashboard() {
                                                         </div>
                                                         <div>
                                                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Balance</p>
-                                                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">0.00 ADA</div>
+                                                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">$0.00 USD</div>
                                                         </div>
                                                     </div>
                                                     <button
@@ -453,6 +418,34 @@ export default function Dashboard() {
                                                         <h3 className="font-semibold text-lg dark:text-white">Recent Tips</h3>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">Your latest received tips</p>
                                                     </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-2 md:mt-0 w-full md:w-auto">
+                                                    <button
+                                                        type="button"
+                                                        role="combobox"
+                                                        aria-controls="radix-:r61:"
+                                                        aria-expanded="false"
+                                                        aria-autocomplete="none"
+                                                        dir="ltr"
+                                                        data-state="closed"
+                                                        className="flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&amp;&gt;span]:line-clamp-1 h-8 w-[180px]"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            className="lucide lucide-chevron-down h-4 w-4 opacity-50"
+                                                            aria-hidden="true"
+                                                        >
+                                                            <path d="m6 9 6 6 6-6"></path>
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-300 space-y-4 flex-1">
