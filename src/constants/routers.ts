@@ -1,5 +1,7 @@
 export const routers = {
-  home: "/",
-  login: "/login",
-  dashboard: "/dashboard",
+    home: "/",
+    login: "/login",
+    tipper: "/tipper",
+    dashboard: "/dashboard",
+    documentation: "/documentation",
 };

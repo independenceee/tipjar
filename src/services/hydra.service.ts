@@ -30,7 +30,7 @@ export const withdraw = async function ({ walletAddress, isCreator = false }: { 
         });
 
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
-        // await hydraTxBuilder.close();
+       
         await hydraTxBuilder.fanout();
         await hydraTxBuilder.final();
 
@@ -121,7 +121,7 @@ export const tip = async function ({
         });
 
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
-        const unsignedTx = await hydraTxBuilder.tip({ tipAddress: tipAddress, amount: amount });
+        const unsignedTx = await hydraTxBuilder.send({ tipAddress: tipAddress, amount: amount });
         return unsignedTx;
     } catch (error) {
         console.log(error);

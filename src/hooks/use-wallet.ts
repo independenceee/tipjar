@@ -5,8 +5,6 @@ import { isNil } from "lodash";
 import { getNonceAddress } from "~/services/user.service";
 import { signIn, signOut } from "next-auth/react";
 import { APP_NETWORK, APP_NETWORK_ID } from "~/constants/enviroments";
-import { parseError } from "~/utils/error/parse-error";
-// import { toast } from "./use-toast";
 
 export interface WalletStoreType {
     wallet: Wallet | null;

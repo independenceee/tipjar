@@ -1,26 +1,28 @@
+import { routers } from "./routers";
+
 export const navbars = [
     {
         id: 1,
         target: "",
         title: "Home",
-        href: "/",
+        href: routers.home,
     },
     {
         id: 2,
         target: "",
         title: "Dashboard",
-        href: "/dashboard",
+        href: routers.dashboard,
     },
     {
         id: 2,
         target: "",
         title: "Tipper",
-        href: "/tipper",
+        href: routers.tipper,
     },
     {
         id: 5,
         target: "_blank",
         title: "Documents",
-        href: "/documents",
+        href: routers.documentation,
     },
 ];

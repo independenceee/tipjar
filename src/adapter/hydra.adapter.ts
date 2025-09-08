@@ -1,14 +1,15 @@
 import { IFetcher, MeshTxBuilder, MeshWallet, UTxO } from "@meshsdk/core";
 import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
 import { DECIMAL_PLACE } from "~/constants/common";
+import { APP_NETWORK } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 
 export class HydraAdapter {
     protected fetcher: IFetcher;
     protected meshWallet: MeshWallet;
     protected meshTxBuilder!: MeshTxBuilder;
-    protected hydraInstance!: HydraInstance;
-    protected hydraProvider: HydraProvider;
+    public hydraInstance!: HydraInstance;
+    public hydraProvider: HydraProvider;
 
     constructor({ meshWallet = null!, hydraProvider = null! }: { meshWallet: MeshWallet; hydraProvider: HydraProvider }) {
         this.meshWallet = meshWallet;
@@ -33,7 +34,13 @@ export class HydraAdapter {
         });
     };
 
-    protected getLovelaceOnlyUTxO = (utxos: UTxO[], quantity = DECIMAL_PLACE) => {
+    /**
+     * Returns the first UTxO containing only Lovelace with quantity > 1,000,000,000.
+     * @param utxos - Array of UTxO objects
+     * @returns - A single UTxO or undefined if no UTxO meets the criteria
+     * @throws - Error if no qualifying UTxO is found
+     */
+    public getUTxOOnlyLovelace = (utxos: UTxO[], quantity = DECIMAL_PLACE) => {
         return utxos.filter((utxo) => {
             const amount = utxo.output.amount;
             return (
@@ -44,5 +51,157 @@ export class HydraAdapter {
                 Number(amount[0].quantity) >= quantity
             );
         })[0];
+    };
+
+    /**
+     * @description Initializing Head creation and UTxO commitment phase.
+     */
+    public init = async () => {
+        try {
+            await this.hydraProvider.connect();
+            await new Promise<void>((resolve, reject) => {
+                this.hydraProvider.onStatusChange((status) => {
+                    try {
+                        if (status === "INITIALIZING") {
+                            resolve();
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                this.hydraProvider.init().catch((error: Error) => reject(error));
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    /**
+     * @description Ready to fanout  Snapshot finalized, ready for layer-1 distribution.
+     */
+    public fanout = async () => {
+        await this.hydraProvider.connect();
+        await new Promise<void>((resolve, reject) => {
+            this.hydraProvider.fanout().catch((error: Error) => reject(error));
+
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "FANOUT_POSSIBLE") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+    };
+
+    /**
+     * @description Finalized Head completed, UTxOs returned to layer-1.
+     */
+    public final = async () => {
+        await this.hydraProvider.connect();
+        await new Promise<void>((resolve, reject) => {
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "FINAL") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            this.hydraProvider.fanout().catch((error: Error) => reject(error));
+        });
+    };
+
+    /**
+     * @description Closed Head closed, starting contestation phase.
+     */
+    public close = async () => {
+        await this.hydraProvider.connect();
+        await new Promise<void>((resolve, reject) => {
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "CLOSED") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            this.hydraProvider.close().catch((error: Error) => reject(error));
+        });
+    };
+
+    /**
+     * @description
+     */
+    public abort = async () => {
+        await this.hydraProvider.connect();
+        await new Promise<void>((resolve, reject) => {
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "OPEN") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            this.hydraProvider.abort().catch((error: Error) => reject(error));
+        });
+    };
+
+    /**
+     * @description Commit UTXOs into the Hydra head to make them available for off-chain transactions.
+     * @returns unsignedTx
+     */
+    public commit = async (): Promise<string> => {
+        await this.hydraProvider.connect();
+        const utxos = await this.meshWallet.getUtxos();
+        console.log(utxos);
+        const utxoOnlyLovelace = this.getUTxOOnlyLovelace(utxos);
+        console.log(utxoOnlyLovelace);
+        return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
+    };
+
+    /**
+     * @description Decommit UTXOs from the Hydra head, withdrawing funds back to the Cardano main chain.
+     * @returns unsignedTx
+     */
+    public decommit = async (): Promise<string> => {
+        return "";
+    };
+
+    /**
+     * @description Merge UTxOs into one to be able to decommit
+     * @returns unsignedTx
+     */
+    public merge = async () => {
+        await this.hydraProvider.connect();
+        const utxos = await this.hydraProvider.fetchUTxOs(await this.meshWallet.getChangeAddress());
+        const unsignedTx = this.meshTxBuilder;
+        const total = utxos.reduce((acc, utxo) => {
+            unsignedTx.txIn(utxo.input.txHash, utxo.input.outputIndex);
+            const lovelace = utxo.output.amount.find((amount) => amount.unit === "lovelace");
+            return acc + (lovelace ? Number(lovelace.quantity) : 0);
+        }, 0);
+        unsignedTx
+            .txOut(await this.meshWallet.getChangeAddress(), [
+                {
+                    unit: "lovelace",
+                    quantity: String(total),
+                },
+            ])
+            .changeAddress(await this.meshWallet.getChangeAddress())
+            .selectUtxosFrom(utxos)
+            .setFee(String(0))
+            .setNetwork(APP_NETWORK);
+        return await unsignedTx.complete();
     };
 }

@@ -12,7 +12,7 @@ export const networks = [
         image: images.preprod,
     },
     {
-        id: 2,
+        id: 3,
         name: "Preview",
         image: images.preview,
     },
