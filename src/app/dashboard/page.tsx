@@ -14,7 +14,7 @@ import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images";
 import { getCreator } from "~/services/creator.service";
 import { signup, submitTx } from "~/services/mesh.service";
-import { commit, getHeadStatus } from "~/services/hydra.service";
+import { commit, getHeadStatus, withdraw } from "~/services/hydra.service";
 import { creatorFormSchema } from "~/lib/schema";
 import { z } from "zod";
 
@@ -77,7 +77,17 @@ export default function Dashboard() {
         }
     }, [address, signTx, queryClient]);
 
-    const handleWithdraw = useCallback(async function () {}, [address, signTx, queryClient]);
+    const handleWithdraw = useCallback(
+        async function () {
+            try {
+                await withdraw({ walletAddress: address as string, isCreator: true });
+                await queryClient.invalidateQueries({ queryKey: ["creator", address] });
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        [address, signTx, queryClient],
+    );
 
     const { data } = useQuery({
         queryKey: ["creator", address],
@@ -278,6 +288,7 @@ export default function Dashboard() {
                                                         </div>
                                                     </div>
                                                     <button
+                                                        onClick={handleWithdraw}
                                                         className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-9 rounded-md px-3 w-full md:w-auto bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700 dark:hover:bg-slate-700"
                                                         aria-disabled="true"
                                                     >

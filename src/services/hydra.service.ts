@@ -8,12 +8,37 @@ import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 import { parseError } from "~/utils/error/parse-error";
 
-export const withdraw = async function ({ isCreator = false }: { isCreator: boolean }) {
+export const withdraw = async function ({ walletAddress, isCreator = false }: { walletAddress: string; isCreator: boolean }) {
     try {
+        if (isNil(walletAddress)) {
+            throw new Error("walletAddress has been required.");
+        }
+
         const hydraProvider = new HydraProvider({
             httpUrl: isCreator ? HYDRA_HTTP_URL : HYDRA_HTTP_URL_SUB,
             wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
         });
+
+        const meshWallet = new MeshWallet({
+            networkId: APP_NETWORK_ID,
+            fetcher: blockfrostProvider,
+            submitter: blockfrostProvider,
+            key: {
+                type: "address",
+                address: walletAddress,
+            },
+        });
+
+        const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
+        await hydraTxBuilder.close();
+        await hydraTxBuilder.fanout();
+        await hydraTxBuilder.final();
+
+        return {
+            data: null,
+            result: true,
+            message: "Withdraw successfully",
+        };
     } catch (error) {
         console.log(error);
     }
@@ -45,6 +70,11 @@ export const commit = async function ({ walletAddress, isCreator = false }: { wa
             wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
         });
 
+        const status = await hydraProvider.get("head");
+        console.log(status);
+        if (status.tag !== "OPEN") {
+            await hydraProvider.connect();
+        }
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
         const unsignedTx = await hydraTxBuilder.commit();
 
@@ -139,7 +169,7 @@ export const getHeadStatus = async function () {
             wsUrl: HYDRA_WS_URL,
         });
 
-        const status = await hydraProvider.get("heads");
+        const status = await hydraProvider.get("head");
 
         return {
             data: status.tag,
