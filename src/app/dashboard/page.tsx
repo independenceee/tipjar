@@ -65,7 +65,7 @@ export default function Dashboard() {
     return (
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
             <Header />
-            {data?.data ? (
+            {!data?.data ? (
                 <aside className="container mx-auto py-8 px-4 pt-24">
                     <div className="max-w-7xl mx-auto space-y-6 px-4 py-8">
                         <div>

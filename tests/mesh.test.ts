@@ -19,7 +19,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
     jest.setTimeout(600000000);
 
     test("Register", async function () {
-        // return;
+        return;
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
         });
@@ -61,18 +61,5 @@ describe("Save data and read data to participate in the cardano hydra process", 
                 resolve();
             });
         });
-    });
-
-    test("", async function () {
-        const assets = await getCreaters({});
-        console.log(assets);
-    });
-
-    test("", async function () {
-        return;
-        const creator = await getCreator({
-            walletAddress: "addr_test1qrr879mjnxd3gjqjdgjxkwzfcnvcgsve927scqk5fc3gfs2hs03pn7uhujentyhzq3ays72u4xtfrlahyjalujhxufsqdeezc0",
-        });
-        console.log(creator);
     });
 });

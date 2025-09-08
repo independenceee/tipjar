@@ -116,18 +116,18 @@ export class HydraTxbuilder extends HydraAdapter {
      * @param quantity
      * @returns unsignedTx
      */
-    tip = async (walletAddress: string, quantity = DECIMAL_PLACE) => {
+    tip = async ({ tipAddress, amount = DECIMAL_PLACE }: { tipAddress: string; amount: number }) => {
         await this.hydraProvider.connect();
         const utxos = await this.hydraProvider.fetchAddressUTxOs(await this.meshWallet.getChangeAddress());
 
-        const utxo = this.getLovelaceOnlyUTxO(utxos, quantity);
+        const utxo = this.getLovelaceOnlyUTxO(utxos, amount);
 
         const unsignedTx = this.meshTxBuilder
             .txIn(utxo.input.txHash, utxo.input.outputIndex)
-            .txOut(walletAddress, [
+            .txOut(tipAddress, [
                 {
                     unit: "lovelace",
-                    quantity: String(quantity),
+                    quantity: String(amount),
                 },
             ])
             .changeAddress(await this.meshWallet.getChangeAddress())

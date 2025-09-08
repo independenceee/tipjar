@@ -1,12 +1,52 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import { ArrowRight, Wallet } from "lucide-react";
 import Image from "next/image";
+import { useCallback, useState } from "react";
 import Footer from "~/components/footer";
 import Header from "~/components/header";
 import { Warn } from "~/components/icons";
-import { Button } from "~/components/ui/button";
+import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images*";
+import { commit, submitHydraTx, tip } from "~/services/hydra.service";
+import { submitTx } from "~/services/mesh.service";
+import { DECIMAL_PLACE } from "~/constants/common";
 
 export default function Page() {
+    const params = useParams();
+    console.log(params.address);
+    const { address, signTx } = useWallet();
+    const [amount, setAmount] = useState(0);
+
+    const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { value } = event.target;
+        setAmount(Number(value));
+    }, []);
+
+    const handleCommit = useCallback(async () => {
+        const unsignedTx = await commit({ walletAddress: address as string, isCreator: false });
+        const signedTx = await signTx(unsignedTx as string);
+        await submitTx({ signedTx });
+    }, [address, signTx]);
+
+    const handleTip = useCallback(async () => {
+        try {
+            const unsignedTx = await tip({
+                walletAddress: address as string,
+                amount: amount * DECIMAL_PLACE,
+                tipAddress: params.address as string,
+                isCreator: false,
+            });
+
+            console.log(unsignedTx);
+            const signedTx = await signTx(unsignedTx as string);
+            await submitHydraTx({ signedTx, isCreator: false });
+        } catch (error) {
+            console.log(error);
+        }
+    }, [address, amount, signTx]);
+
     return (
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
             <Header />
@@ -21,6 +61,12 @@ export default function Page() {
                                 </h5>
                                 <div className="text-sm [&amp;_p]:leading-relaxed text-blue-600 dark:text-blue-300">Status: created</div>
                             </div>
+                            <button
+                                onClick={handleCommit}
+                                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center"
+                            >
+                                Register
+                            </button>
                         </div>
                     </section>
 
@@ -56,6 +102,8 @@ export default function Page() {
                                         <div className="flex items-start  gap-4 justify-between">
                                             <div className="text-left flex flex-col gap-2  w-full ">
                                                 <input
+                                                    onChange={handleChange}
+                                                    value={amount === 0 ? "" : amount}
                                                     name="ADA"
                                                     type="text"
                                                     placeholder="Enter amount tipper"
@@ -64,6 +112,7 @@ export default function Page() {
                                                 <div className="text-sm text-gray-500 dark:text-gray-400">$0.00 USD</div>
                                             </div>
                                             <button
+                                                onClick={handleTip}
                                                 className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-9 rounded-md px-3 w-full md:w-auto bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700 dark:hover:bg-slate-700"
                                                 aria-disabled="true"
                                             >

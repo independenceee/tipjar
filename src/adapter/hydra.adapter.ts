@@ -29,7 +29,7 @@ export class HydraAdapter {
             params: protocolParameters,
             fetcher: this.hydraProvider,
             submitter: this.hydraProvider,
-            isHydra: !!this.hydraProvider,
+            isHydra: true,
         });
     };
 
