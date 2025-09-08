@@ -30,7 +30,7 @@ export const withdraw = async function ({ walletAddress, isCreator = false }: { 
         });
 
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
-        await hydraTxBuilder.close();
+        // await hydraTxBuilder.close();
         await hydraTxBuilder.fanout();
         await hydraTxBuilder.final();
 
