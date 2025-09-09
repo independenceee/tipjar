@@ -9,7 +9,7 @@ import Header from "~/components/header";
 import { Warn } from "~/components/icons";
 import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images*";
-import { commit, submitHydraTx, tip } from "~/services/hydra.service";
+import { commit, send, submitHydraTx } from "~/services/hydra.service";
 import { submitTx } from "~/services/mesh.service";
 import { DECIMAL_PLACE } from "~/constants/common";
 
@@ -32,14 +32,13 @@ export default function Page() {
 
     const handleTip = useCallback(async () => {
         try {
-            const unsignedTx = await tip({
+            const unsignedTx = await send({
                 walletAddress: address as string,
-                amount: amount * DECIMAL_PLACE,
+                amount: amount,
                 tipAddress: params.address as string,
                 isCreator: false,
             });
 
-            console.log(unsignedTx);
             const signedTx = await signTx(unsignedTx as string);
             await submitHydraTx({ signedTx, isCreator: false });
         } catch (error) {

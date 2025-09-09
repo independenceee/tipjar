@@ -57,7 +57,8 @@ export default function Wallet({ wallet, session }: Props) {
             <AlertDialogTrigger asChild>
                 <main
                     className={cn(
-                        "flex items-center justify-between w-[332px] py-2 px-[35px] rounded-md text-[18px] relative text-gray-300 border border-gray-600 select-none cursor-pointer",
+                        "flex items-center justify-between w-[332px] py-2 px-[35px] rounded-md text-[18px] relative select-none cursor-pointer border transition-colors",
+                        "bg-white text-gray-800 border-gray-300 hover:bg-gray-100 dark:bg-slate-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-slate-800",
                         {
                             "opacity-50 cursor-not-allowed": !isDownload,
                         },

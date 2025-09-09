@@ -14,18 +14,21 @@ export class HydraTxBuilder extends HydraAdapter {
         await this.hydraProvider.connect();
         const utxos = await this.hydraProvider.fetchAddressUTxOs(await this.meshWallet.getChangeAddress());
         const utxo = this.getUTxOOnlyLovelace(utxos, amount);
+
         const unsignedTx = this.meshTxBuilder
             .txIn(utxo.input.txHash, utxo.input.outputIndex)
             .txOut(tipAddress, [
                 {
                     unit: "lovelace",
-                    quantity: String(amount),
+                    quantity: String("1000000"),
                 },
             ])
             .changeAddress(await this.meshWallet.getChangeAddress())
             .selectUtxosFrom(utxos)
             .setFee(String(0))
             .setNetwork(APP_NETWORK);
+
+        console.log(await unsignedTx.complete());
 
         return await unsignedTx.complete();
     };

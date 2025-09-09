@@ -2,7 +2,6 @@ import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { images } from "~/public/images";
 import Image from "next/image";
 import Link from "next/link";
-import { Home } from "lucide-react";
 import { routers } from "~/constants/routers";
 
 export const baseOptions: BaseLayoutProps = {

@@ -17,7 +17,7 @@ const Wallet = () => {
             {!isNil(wallet) ? (
                 <Account />
             ) : (
-                <section className="hidden md:block">
+                <section className="hidden xl:block">
                     <Link
                         href={routers.login}
                         className="inline-flex items-center gap-2 rounded-sm border border-white/30 bg-gray-800/50 px-4 py-2 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:border-white/50 hover:bg-gray-700/50"
@@ -39,6 +39,6 @@ const Wallet = () => {
 };
 
 export const ConnectWallet = dynamic(() => Promise.resolve(Wallet), {
-    loading: () => <></>,
+    loading: () => <div></div>,
     ssr: false,
 });

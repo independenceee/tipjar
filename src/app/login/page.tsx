@@ -72,34 +72,32 @@ export default function SignInPage() {
                 </header>
 
                 <main className="mt-[60px] mb-[20px] flex items-center justify-center flex-col h-full">
-                    <section className="w-[540px] box-border py-[35px] px-[45px] bg-slate-900 shadow-lg rounded-md">
+                    <section className="w-[540px] box-border py-[35px] px-[45px] bg-white dark:bg-slate-900 shadow-lg rounded-md border border-gray-200 dark:border-slate-700">
                         <div className="flex items-center justify-between">
-                            <div className=" text-[20px]">
+                            <div className="text-[20px] text-gray-900 dark:text-gray-100">
                                 <strong>Connect Wallet</strong>
                             </div>
-                            <div className="w-[120px] text-[16px] text-end">
+                            <div className="w-[120px] text-[16px] text-end text-gray-700 dark:text-gray-300">
                                 <strong>{network.charAt(0).toUpperCase() + network.slice(1).toLowerCase()}</strong>
                             </div>
                         </div>
 
                         <div className="flex mt-5">
-                            <section className="pr-[30px] border-r-[1px] flex flex-col gap-5 border-solid border-gray-500 mr-[30px] h-[230px] overflow-y-auto overflow-x-hidden">
-                                {networks.map(({ image, name }, index: number) => {
-                                    return (
-                                        <Network
-                                            image={image}
-                                            name={name}
-                                            key={index}
-                                            isActive={name.toLowerCase() === network.toLowerCase()}
-                                            setNetwork={setNetwork}
-                                        />
-                                    );
-                                })}
+                            <section className="pr-[30px] border-r flex flex-col gap-5 border-solid border-gray-300 dark:border-gray-600 mr-[30px] h-[230px] overflow-y-auto overflow-x-hidden">
+                                {networks.map(({ image, name }, index: number) => (
+                                    <Network
+                                        image={image}
+                                        name={name}
+                                        key={index}
+                                        isActive={name.toLowerCase() === network.toLowerCase()}
+                                        setNetwork={setNetwork}
+                                    />
+                                ))}
                             </section>
-                            <section className="overflow-x-hidden overflow-y-auto pr-[20px] mr-[-20px] h-[230px] flex flex-col gap-2 ">
-                                {wallets.map((wallet: WalletType, index: number) => {
-                                    return <Wallet key={index} wallet={wallet} session={session} />;
-                                })}
+                            <section className="overflow-x-hidden overflow-y-auto pr-[20px] mr-[-20px] h-[230px] flex flex-col gap-2">
+                                {wallets.map((wallet: WalletType, index: number) => (
+                                    <Wallet key={index} wallet={wallet} session={session} />
+                                ))}
                             </section>
                         </div>
                     </section>

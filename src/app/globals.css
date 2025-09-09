@@ -115,6 +115,34 @@
     --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f8f8f8;
+}
+.dark ::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+.dark ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #e0e0e0 #f8f8f8;
+}
+.dark * {
+    scrollbar-color: #444 #222;
+}
+
 @layer base {
     * {
         @apply border-border outline-ring/50;

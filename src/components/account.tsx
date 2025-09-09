@@ -33,7 +33,7 @@ export default function Account() {
         <Popover>
             <PopoverTrigger
                 className={
-                    "inline-flex items-center gap-2 rounded-3xl border border-white/30 bg-gray-800/50 pr-4 pl-1 py-1 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:border-white/50 hover:bg-gray-700/50"
+                    " items-center gap-2 rounded-3xl border border-white/30 bg-gray-800/50 pr-4 pl-1 py-1 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:border-white/50 hover:bg-gray-700/50 hidden xl:inline-flex"
                 }
             >
                 <div className={"h-8 w-8"}>
