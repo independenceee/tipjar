@@ -12,8 +12,6 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
     const params = await props.params;
     const page = source.getPage(params.slug);
     if (!page) notFound();
-
-    console.log(page);
     const MDXContent = page.data.body;
 
     return (

@@ -1,0 +1,111 @@
+---
+title: Introduction
+description: This is just example of the blog post
+date: 2025-8-24
+author: Dao Manh Tung
+---
+
+## Introduction to MDX Magic
+
+### Introduction to MDX Magic
+
+Welcome to the world of **MDX**, a revolutionary way to write technical documentation and blog posts. MDX seamlessly blends Markdown's simplicity with the power of React components.
+
+## Why MDX is Awesome
+
+MDX transforms how we create content by allowing full React component integration. Here's a simple component example:
+
+```jsx
+import React from "react";
+
+const CalloutBox = ({ children, type = "info" }) => {
+    return { children };
+};
+
+export default CalloutBox;
+```
+
+You can use this component directly in your MDX file, creating dynamic and interactive content that goes far beyond traditional markdown.
+
+## Setting Up Your MDX Environment
+
+Configuring MDX involves several steps. Here's a comprehensive webpack configuration:
+
+```javascript
+module.exports = {
+    module: {
+        rules: [
+            {
+                test: /\.mdx?$/,
+                use: ["babel-loader", "@mdx-js/loader"],
+            },
+        ],
+    },
+    plugins: [
+        new MDXPlugin({
+            remarkPlugins: [remarkGfm, remarkFrontmatter],
+        }),
+    ],
+};
+```
+
+## Advanced MDX Techniques
+
+React hooks work beautifully with MDX. Consider this interactive counter component:
+
+```jsx
+import React, { useState } from 'react';
+
+const InteractiveCounter = () => {
+  const [count, setCount] = useState(0);
+
+  return (
+
+      Current Count: {count}
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+
+
+  );
+};
+
+export default InteractiveCounter;
+```
+
+## Deep Dive into MDX Imports
+
+Managing complex imports becomes straightforward with MDX:
+
+```typescript
+// Import multiple components
+import Button from "./components/Button";
+import CodeHighlighter from "./components/CodeHighlighter";
+import DataVisualization from "./components/DataVisualization";
+
+// Dynamic imports for performance
+const LazyLoadedComponent = React.lazy(() => import("./components/HeavyComponent"));
+```
+
+## Lorem Ipsum Content Exploration
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nunc eget ultricies tincidunt, velit velit bibendum velit, vel bibendum velit velit sit amet velit.
+
+Donec euismod, nisl eget ultricies tincidunt, velit velit bibendum velit, vel bibendum velit velit sit amet velit. Sed euismod, nisl eget ultricies tincidunt, velit velit bibendum velit, vel bibendum velit velit sit amet velit.
+
+## Performance Considerations in MDX
+
+Performance matters! Here's an optimization technique:
+
+```javascript
+// Memoization for complex components
+const MemoizedComponent = React.memo(ExpensiveComponent, (prevProps, nextProps) => {
+    // Custom comparison logic
+    return prevProps.data === nextProps.data;
+});
+```
+
+## The Future of Technical Writing
+
+MDX represents a **paradigm shift** in documentation. By combining markdown's readability with React's interactivity, we're creating a new standard for technical communication.
+
+Embrace the **MDX revolution**! Write documentation that's not just informative, but truly interactive. 🚀📝
