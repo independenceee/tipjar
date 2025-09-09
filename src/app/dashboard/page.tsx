@@ -15,10 +15,10 @@ import { images } from "~/public/images";
 import { getCreator } from "~/services/creator.service";
 import { signup, submitTx } from "~/services/mesh.service";
 import { commit, getHeadStatus, withdraw } from "~/services/hydra.service";
-import { creatorFormSchema } from "~/lib/schema";
+import { CreatorSchema } from "~/lib/schema";
 import { z } from "zod";
 
-type Form = z.infer<typeof creatorFormSchema>;
+type Form = z.infer<typeof CreatorSchema>;
 
 export default function Dashboard() {
     const { address, signTx } = useWallet();
@@ -31,7 +31,7 @@ export default function Dashboard() {
         formState: { errors, isSubmitting },
         watch,
     } = useForm<Form>({
-        resolver: zodResolver(creatorFormSchema),
+        resolver: zodResolver(CreatorSchema),
         defaultValues: {
             title: "",
             description: "",
@@ -54,8 +54,6 @@ export default function Dashboard() {
 
                 const signedTx = await signTx(unsignedTx as string);
                 await submitTx({ signedTx });
-
-                // Kiểm tra lại trạng thái creator bằng cách invalidate query
                 await queryClient.invalidateQueries({ queryKey: ["creator", address] });
             } catch (error) {
                 console.error("TxSignError:", error);

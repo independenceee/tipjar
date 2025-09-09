@@ -5,16 +5,17 @@ import { APP_NETWORK } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 
 /**
- * 
+ * @description HydraAdapter base class for Hydra transactions and operations.
+ * @param param { meshWallet: MeshWallet, hydraProvider: HydraProvider }
  */
 export class HydraAdapter {
     protected fetcher: IFetcher;
     protected meshWallet: MeshWallet;
-    protected meshTxBuilder!: MeshTxBuilder;
+    public meshTxBuilder!: MeshTxBuilder;
     public hydraInstance!: HydraInstance;
     public hydraProvider: HydraProvider;
 
-    constructor({ meshWallet = null!, hydraProvider = null! }: { meshWallet: MeshWallet; hydraProvider: HydraProvider }) {
+    constructor({ meshWallet, hydraProvider }: { meshWallet: MeshWallet; hydraProvider: HydraProvider }) {
         this.meshWallet = meshWallet;
         this.fetcher = blockfrostProvider;
         this.hydraProvider = hydraProvider;
@@ -23,11 +24,9 @@ export class HydraAdapter {
             provider: this.hydraProvider,
             fetcher: blockfrostProvider,
         });
-
-        this.initialized();
     }
 
-    protected initialized = async () => {
+    public async initialize() {
         const protocolParameters = await this.hydraProvider.fetchProtocolParameters();
         this.meshTxBuilder = new MeshTxBuilder({
             params: protocolParameters,
@@ -35,7 +34,7 @@ export class HydraAdapter {
             submitter: this.hydraProvider,
             isHydra: true,
         });
-    };
+    }
 
     /**
      * Returns the first UTxO containing only Lovelace with quantity > 1,000,000,000.
@@ -167,9 +166,7 @@ export class HydraAdapter {
     public commit = async (): Promise<string> => {
         await this.hydraProvider.connect();
         const utxos = await this.meshWallet.getUtxos();
-        console.log(utxos);
         const utxoOnlyLovelace = this.getUTxOOnlyLovelace(utxos);
-        console.log(utxoOnlyLovelace);
         return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
     };
 

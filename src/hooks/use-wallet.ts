@@ -84,7 +84,6 @@ export const useWallet = create<WalletStoreType>((set, get) => ({
             if (stakeList.length === 0) {
                 throw new Error("Cant get stake address");
             }
-            console.log(session);
             const stakeAddress = stakeList[0];
 
             if (isNil(session)) {

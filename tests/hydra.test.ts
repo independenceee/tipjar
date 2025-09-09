@@ -5,7 +5,7 @@ import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 
 describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communities", function () {
-    let isCreator: boolean = true;
+    let isCreator: boolean = false;
     let meshWallet: MeshWallet;
     let hydraProvider: HydraProvider;
 
@@ -16,9 +16,9 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
             submitter: blockfrostProvider,
             key: {
                 type: "mnemonic",
-                words: process.env.APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.APP_MNEMONIC?.split(" ") || [],
                 // words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
-                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
             },
         });
 
@@ -134,13 +134,14 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     describe("Transaction processing in hydra from basic to advanced", function () {
         it("Lovelace transfer from one address to another", async function () {
-            return;
+            // return;
             const hydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,
             });
+            await hydraTxBuilder.initialize();
             const unsignedTx = await hydraTxBuilder.send({
-                tipAddress: "",
+                tipAddress: "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
                 amount: 1_000_000,
             });
             const signedTx = await meshWallet.signTx(unsignedTx, true);

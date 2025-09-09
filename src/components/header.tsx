@@ -68,12 +68,27 @@ export default function Header() {
                     </section>
                 </div>
 
-                {/* Mobile menu content */}
                 {isMenuOpen && (
-                    <div className="md:hidden border-t border-gray-200 dark:border-white/10 bg-white/95 dark:bg-black/95 backdrop-blur-sm">
-                        <div className="px-6 py-4 space-y-4">
-                            {/* Links */}
-                            <div className="space-y-3"></div>
+                    <div className="md:hidden border-t border-gray-200 dark:border-white/10 bg-white/95 dark:bg-transparent backdrop-blur-sm min-w-screen min-h-screen">
+                        <div className="px-6 py-4 space-y-4 flex flex-col items-center">
+                            {navbars.map(function (navbar) {
+                                const isActive = isActiveNav(navbar.href);
+                                return (
+                                    <Link
+                                        target={navbar.target}
+                                        href={navbar.href}
+                                        key={navbar.id}
+                                        className={` space-y-3 font-medium transition-colors duration-200 relative ${
+                                            isActive
+                                                ? "text-blue-600 dark:text-blue-400"
+                                                : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                                        }`}
+                                    >
+                                        {navbar.title}
+                                        {isActive && <div className="absolute -bottom-2 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />}
+                                    </Link>
+                                );
+                            })}
                         </div>
                     </div>
                 )}

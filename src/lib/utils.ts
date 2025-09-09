@@ -6,6 +6,12 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+/**
+ * @description Shorten a string by keeping the first and last `length` characters, separated by ellipsis.
+ * @param str
+ * @param length
+ * @returns
+ */
 export function shortenString(str = "", length: number = 6): string {
     if (str.length <= length * 2) {
         return str;
@@ -14,6 +20,7 @@ export function shortenString(str = "", length: number = 6): string {
     const end = str.slice(-length);
     return `${start}...${end}`;
 }
+
 /**
  * @description Convert inline datum from utxo to metadata
  * 1. Converts a hex string into a buffer for decoding.
@@ -45,7 +52,13 @@ export async function datumToJson(
     return obj;
 }
 
-export async function getPkHash(datum: string) {
+/**
+ * @description Get payment cridential from inline datum
+ *
+ * @param datum
+ * @returns metadata
+ */
+export async function getPaymentKeykHash(datum: string): Promise<string> {
     const cborDatum: Buffer = Buffer.from(datum, "hex");
     const decoded = await cbor.decodeFirst(cborDatum);
     for (const [key, value] of decoded.value[0]) {
@@ -53,9 +66,16 @@ export async function getPkHash(datum: string) {
             return value.toString("hex");
         }
     }
-    return null;
+
+    return "";
 }
 
+/**
+ * @description Convert array of key-value pairs to an object
+ *
+ * @param data
+ * @returns
+ */
 export function convertToKeyValue(data: { k: { bytes: string }; v: { bytes: string } }[]): Record<string, string> {
     return Object.fromEntries(
         data.map(({ k, v }) => {
