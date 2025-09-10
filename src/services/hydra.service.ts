@@ -142,7 +142,7 @@ export const submitHydraTx = async function ({
             httpUrl: isCreator ? HYDRA_HTTP_URL : HYDRA_HTTP_URL_SUB,
             wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
         });
-
+        await hydraProvider.connect();
         const txHash = await hydraProvider.submitTx(signedTx);
 
         return {

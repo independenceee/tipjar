@@ -25,7 +25,6 @@ export default function Page() {
 
     const handleCommit = useCallback(async () => {
         const unsignedTx = await commit({ walletAddress: address as string, isCreator: false });
-        console.log(unsignedTx);
         const signedTx = await signTx(unsignedTx as string);
         await submitTx({ signedTx });
     }, [address, signTx]);
@@ -36,15 +35,14 @@ export default function Page() {
                 walletAddress: address as string,
                 amount: amount,
                 tipAddress: params.address as string,
-                isCreator: false,
+                isCreator: true,
             });
-            console.log(unsignedTx);
 
             const signedTx = await signTx(unsignedTx as string);
             console.log(signedTx);
             await submitHydraTx({
                 signedTx: signedTx,
-                isCreator: false,
+                isCreator: true,
             });
         } catch (error) {
             console.log(JSON.stringify(error));
