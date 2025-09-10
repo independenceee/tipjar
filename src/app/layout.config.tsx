@@ -16,5 +16,4 @@ export const baseOptions: BaseLayoutProps = {
         ),
     },
     githubUrl: "https://github.com/cardano2vn",
-    // disableThemeSwitch: true,
 };

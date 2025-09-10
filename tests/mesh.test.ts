@@ -63,4 +63,21 @@ describe("Save data and read data to participate in the cardano hydra process", 
             });
         });
     });
+
+    test("Removes", async function () {
+        return;
+        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
+            meshWallet: meshWallet,
+        });
+        const unsignedTx: string = await meshTxBuilder.remove();
+        const signedTx = await meshWallet.signTx(unsignedTx, true);
+        const txHash = await meshWallet.submitTx(signedTx);
+
+        await new Promise<void>(function (resolve, reject) {
+            blockfrostProvider.onTxConfirmed(txHash, () => {
+                console.log("https://preview.cexplorer.io/tx/" + txHash);
+                resolve();
+            });
+        });
+    });
 });

@@ -1,4 +1,4 @@
-import { deserializeAddress, ForgeScript, mConStr0, resolveScriptHash, stringToHex } from "@meshsdk/core";
+import { deserializeAddress, ForgeScript, mConStr0, resolveScriptHash, stringToHex, UTxO } from "@meshsdk/core";
 import { MeshAdapter } from "~/adapter/mesh.adapter";
 import { APP_NETWORK } from "~/constants/enviroments";
 
@@ -72,6 +72,35 @@ export class MeshTxBuilder extends MeshAdapter {
                 .mint("-1", policyId, stringToHex(assetName))
                 .mintingScript(forgingScript);
         }
+
+        unsignedTx
+            .changeAddress(walletAddress)
+            .requiredSignerHash(deserializeAddress(walletAddress).pubKeyHash)
+            .selectUtxosFrom(utxos)
+            .txInCollateral(collateral.input.txHash, collateral.input.outputIndex, collateral.output.amount, collateral.output.address)
+            .setNetwork(APP_NETWORK);
+        return await unsignedTx.complete();
+    };
+
+    /**
+     * @returns unsignedTx
+     */
+    remove = async (): Promise<string> => {
+        const { utxos, collateral, walletAddress } = await this.getWalletForTx();
+
+        const utxosAssets: Array<UTxO> = await this.fetcher.fetchAddressUTxOs(this.spendAddress);
+
+        const unsignedTx = this.meshTxBuilder;
+
+        utxosAssets.forEach((utxo) => {
+            unsignedTx
+                .spendingPlutusScriptV3()
+                .txIn(utxo.input.txHash, utxo.input.outputIndex)
+                .txInInlineDatumPresent()
+                .txInRedeemerValue(mConStr0([]))
+                .txInScript(this.spendScriptCbor)
+                .txOut(walletAddress, utxo.output.amount);
+        });
 
         unsignedTx
             .changeAddress(walletAddress)
