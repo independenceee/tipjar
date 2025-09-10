@@ -20,7 +20,7 @@ export class HydraTxBuilder extends HydraAdapter {
             .txOut(tipAddress, [
                 {
                     unit: "lovelace",
-                    quantity: String("1000000"),
+                    quantity: String(amount * DECIMAL_PLACE),
                 },
             ])
             .changeAddress(await this.meshWallet.getChangeAddress())

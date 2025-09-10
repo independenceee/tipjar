@@ -11,7 +11,6 @@ import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images*";
 import { commit, send, submitHydraTx } from "~/services/hydra.service";
 import { submitTx } from "~/services/mesh.service";
-import { DECIMAL_PLACE } from "~/constants/common";
 
 export default function Page() {
     const params = useParams();
@@ -26,6 +25,7 @@ export default function Page() {
 
     const handleCommit = useCallback(async () => {
         const unsignedTx = await commit({ walletAddress: address as string, isCreator: false });
+        console.log(unsignedTx);
         const signedTx = await signTx(unsignedTx as string);
         await submitTx({ signedTx });
     }, [address, signTx]);
@@ -41,12 +41,13 @@ export default function Page() {
             console.log(unsignedTx);
 
             const signedTx = await signTx(unsignedTx as string);
+            console.log(signedTx);
             await submitHydraTx({
                 signedTx: signedTx,
                 isCreator: false,
             });
         } catch (error) {
-            console.log(error);
+            console.log(JSON.stringify(error));
         }
     }, [address, amount, signTx]);
 

@@ -106,7 +106,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     describe("Implement full fund lifecycle within Hydra head (commit funds into head and decommit them back to main chain)", () => {
         it("1- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
-            return;
+            // return;
             const hydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,
@@ -140,13 +140,14 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
                 hydraProvider: hydraProvider,
             });
             await hydraTxBuilder.initialize();
-            const unsignedTx = await hydraTxBuilder.send({
-                tipAddress: "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
-                amount: 1_000_000,
-            });
-            const signedTx = await meshWallet.signTx(unsignedTx, true);
-            const txHash = await hydraProvider.submitTx(signedTx);
-            console.log("https://preview.cexplorer.io/tx/" + txHash);
+            // const unsignedTx = await hydraTxBuilder.send({
+            //     tipAddress: "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
+            //     amount: 1_000_000,
+            // });
+            // const signedTx = await meshWallet.signTx(unsignedTx, true);
+            const txHash = await hydraProvider.submitTx(
+                "84a400d901028182582055202fc2f7f84bb6928002c60f06f4bef2015780d040a9cce6f115ea944c1e0802018282583900ab402dbc084e88bfe210f47aecfbc2bc7828f5c499d74fb4205d6603d039a0271768db826693b6ff9a80a76223b0b17e1d45e601fea5aba61a001e848082583900acfbfe9e909dc505f60f010a9c0a4f98b21f29be1d7afcee24f160d61955dcc67dab38eb88e07e6e202fad49f1a14ca5572366aa0788c2191a007a12000200075820bdaa99eb158414dea0a91d6c727e2268574b23efe6e08ab3b841abe8059a030ca100818258205fd3ba99c1e900748f11f51f7fecbbb5459aa362b15a50b39d23963558785a705840728f78ce494a0b3e835439a6b38796155737f0ca3d9d120948fc94000b46285eab643e8d521df89bca70582269d290105898005729fdd8b6937ca773afe7490df5d90103a0",
+            );
             const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
             console.log(utxosSnapshot);
         });

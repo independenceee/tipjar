@@ -71,11 +71,6 @@ export const commit = async function ({ walletAddress, isCreator = false }: { wa
             wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
         });
 
-        const status = await hydraProvider.get("head");
-        console.log(status);
-        if (status.tag !== "OPEN") {
-            await hydraProvider.connect();
-        }
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
         const unsignedTx = await hydraTxBuilder.commit();
 
@@ -126,7 +121,7 @@ export const send = async function ({
         const unsignedTx = await hydraTxBuilder.send({ tipAddress: tipAddress, amount: amount });
         return unsignedTx;
     } catch (error) {
-        console.log(error);
+        console.log(JSON.stringify(error));
     }
 };
 
@@ -149,7 +144,7 @@ export const submitHydraTx = async function ({
         });
 
         const txHash = await hydraProvider.submitTx(signedTx);
-        
+
         return {
             data: txHash,
             result: true,
