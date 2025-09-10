@@ -26,6 +26,11 @@ export class HydraAdapter {
         });
     }
 
+    /**
+     * @description Initialize the MeshTxBuilder with protocol parameters from the Hydra provider.
+     * This method must be called before performing any transactions.
+     * @returns void
+     */
     public async initialize() {
         const protocolParameters = await this.hydraProvider.fetchProtocolParameters();
         this.meshTxBuilder = new MeshTxBuilder({

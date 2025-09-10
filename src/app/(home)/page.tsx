@@ -1,10 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import Action from "~/components/action";
 import Footer from "~/components/footer";
 import Header from "~/components/header";
 import { routers } from "~/constants/routers";
-import { images } from "~/public/images";
 
 export default function Home() {
     return (
@@ -35,7 +33,7 @@ export default function Home() {
                                     <div className="relative mb-12 border-l-2 border-gray-300 dark:border-white/20 pl-6">
                                         <p className="mb-6 text-xl leading-relaxed text-gray-600 dark:text-gray-300">
                                             <strong className="text-gray-900 dark:text-white">Send and receive tips instantly</strong> with negligible
-                                            fees using Cardano's Layer 2 Hydra protocol. Empower creators and communities with fast, secure, and
+                                            fees using Cardano Layer 2 Hydra protocol. Empower creators and communities with fast, secure, and
                                             open-source micropayments.
                                         </p>
                                         <p className="text-lg text-gray-500 dark:text-gray-400">Open participation. Global opportunity.</p>
@@ -59,10 +57,7 @@ export default function Home() {
                                     <div className="relative">
                                         <div className="relative h-[55vh] w-full">
                                             <div className="absolute left-12 top-0 z-10 h-48 w-56 -rotate-2 transform overflow-hidden border-8 border-gray-200 dark:border-white shadow-2xl">
-                                                <div
-                                                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                                                    // style={{ backgroundImage: `url(${images.landing01.src})` }}
-                                                ></div>
+                                                <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"></div>
                                                 <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-800/40 to-transparent"></div>
                                                 <div className="relative flex h-full flex-col justify-end p-4">
                                                     <div className="mb-3 h-8 w-full bg-gradient-to-r from-blue-500/20 to-transparent"></div>
