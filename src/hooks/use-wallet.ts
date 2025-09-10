@@ -13,7 +13,7 @@ export interface WalletStoreType {
     browserWallet: BrowserWallet | null;
     getBalance: () => Promise<number>;
     getUtxos: () => Promise<Array<UTxO>>;
-    signTx: (message: string) => Promise<string>;
+    signTx: (unsignedTx: string) => Promise<string>;
     submitTx: (signedTx: string) => Promise<string>;
     disconnect: () => Promise<void>;
     signIn: (session: Session | null, wallet: Wallet) => Promise<void>;

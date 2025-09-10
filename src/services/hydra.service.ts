@@ -149,7 +149,7 @@ export const submitHydraTx = async function ({
         });
 
         const txHash = await hydraProvider.submitTx(signedTx);
-
+        
         return {
             data: txHash,
             result: true,

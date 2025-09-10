@@ -28,8 +28,6 @@ export class HydraTxBuilder extends HydraAdapter {
             .setFee(String(0))
             .setNetwork(APP_NETWORK);
 
-        console.log(await unsignedTx.complete());
-
         return await unsignedTx.complete();
     };
 }

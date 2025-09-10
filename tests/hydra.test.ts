@@ -144,11 +144,9 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
                 tipAddress: "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
                 amount: 1_000_000,
             });
-            const signedTx = await meshWallet.signTx(
-                "84a400d90102818258204f58242c80d2fa37c62862d7cdfc71f3bdc7055d66e825a7a214f3e1118032ee01018282583900ab402dbc084e88bfe210f47aecfbc2bc7828f5c499d74fb4205d6603d039a0271768db826693b6ff9a80a76223b0b17e1d45e601fea5aba61a0098968082583900acfbfe9e909dc505f60f010a9c0a4f98b21f29be1d7afcee24f160d61955dcc67dab38eb88e07e6e202fad49f1a14ca5572366aa0788c2191b00000002534586c00200075820bdaa99eb158414dea0a91d6c727e2268574b23efe6e08ab3b841abe8059a030ca0f5d90103a0",
-                true,
-            );
-            await hydraProvider.submitTx(signedTx);
+            const signedTx = await meshWallet.signTx(unsignedTx, true);
+            const txHash = await hydraProvider.submitTx(signedTx);
+            console.log("https://preview.cexplorer.io/tx/" + txHash);
             const utxosSnapshot = await hydraProvider.subscribeSnapshotUtxo();
             console.log(utxosSnapshot);
         });

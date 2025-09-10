@@ -38,9 +38,13 @@ export default function Page() {
                 tipAddress: params.address as string,
                 isCreator: false,
             });
+            console.log(unsignedTx);
 
             const signedTx = await signTx(unsignedTx as string);
-            await submitHydraTx({ signedTx, isCreator: false });
+            await submitHydraTx({
+                signedTx: signedTx,
+                isCreator: false,
+            });
         } catch (error) {
             console.log(error);
         }
