@@ -1,58 +1,33 @@
 # HydraTipJar
 
-A decentralized tipping application built on Cardano's Layer 2 Hydra protocol, enabling instant and low-cost micropayments.
+HydraTipJar is an open-source decentralized application (dApp) that brings instant, low-fee tipping and micropayments to Cardano using the Hydra Layer 2 protocol. Designed for creators, communities, and developers, HydraTipJar showcases the power of Hydra for scalable, real-time transactions.
 
-## Overview
+## 🚀 Why HydraTipJar?
 
-HydraTipJar is a Next.js-based dApp that demonstrates the power of Hydra for handling microtransactions. It allows content creators to receive tips from their audience with near-instant finality and minimal transaction fees.
+-   **Instant Tips:** Send and receive ADA tips in seconds, not minutes.
+-   **Negligible Fees:** Hydra Layer 2 slashes transaction costs, making micro-rewards practical.
+-   **Open Source:** Transparent, auditable, and extensible for the Cardano developer ecosystem.
+-   **Creator Empowerment:** Enable fans to support creators with frictionless crypto payments.
+-   **Developer Friendly:** A reference implementation for Hydra, Cardano wallets (CIP-30), and dApp best practices.
 
-## Features
+## 🌐 Features
 
--   **Instant Tipping**: Process tips off-chain through Hydra Heads
--   **Low Fees**: Minimize transaction costs for micropayments
--   **Multi-Wallet Support**: Compatible with popular Cardano wallets
-    -   Lace
-    -   Nami
-    -   Eternl
-    -   Flint
-    -   Typhon
-    -   Vespr
-    -   Yoroi
-    -   Nufi
--   **Real-time Balance Updates**: Instant balance reflection for both tipper and creator
--   **Dark/Light Theme**: Supports both dark and light modes
--   **Responsive Design**: Works seamlessly across devices
+-   Hydra Head state channel management
+-   ADA commitment and off-chain tip transactions
+-   Real-time balance updates for tipper and creator
+-   Secure wallet integration (Lace, Eternl, Nami, Flint, Typhon, Vespr, Yoroi, Nufi)
+-   Responsive, theme-aware UI (dark/light mode)
+-   Open participation, global opportunity
 
-## Technology Stack
+## 🛠️ Technology Stack
 
--   **Frontend**:
+-   **Frontend:** Next.js, React, TypeScript, TailwindCSS, Radix UI
+-   **Blockchain:** Cardano Layer 1, Hydra Layer 2, Mesh SDK, CIP-30
+-   **Smart Contracts:** Aiken (Plutus), MeshTxBuilder
 
-    -   Next.js 14
-    -   React with TypeScript
-    -   TailwindCSS for styling
-    -   Geist Font family
-    -   Radix UI components
+## ⚡ Getting Started
 
--   **Blockchain**:
-
-    -   Cardano Layer 1 (for settlement)
-    -   Hydra Protocol (Layer 2)
-    -   Mesh SDK for Cardano integration
-    -   CIP-30 wallet standard
-
--   **Smart Contracts**:
-    -   Aiken for validator scripts
-    -   Mesh transaction builder
-
-## Getting Started
-
-1. **Prerequisites**
-
-    - Node.js
-    - A compatible Cardano wallet
-    - Local Hydra node setup
-
-2. **Installation**
+1.  **Clone the repo:**
 
     ```bash
     git clone https://github.com/independenceee/tipjar.git
@@ -60,60 +35,65 @@ HydraTipJar is a Next.js-based dApp that demonstrates the power of Hydra for han
     npm install
     ```
 
-3. **Environment Setup**
-   Create a `.env` file with necessary configurations (check `.env.example`)
+2.  **Configure environment:**
 
-4. **Development**
+    -   Copy `.env.example` to `.env` and update settings
+
+3.  **Run locally:**
+
     ```bash
     npm run dev
     ```
-    The app will be available at `http://localhost:3000`
 
-## Smart Contract Development
+    Visit [http://localhost:3000](http://localhost:3000)
 
-The smart contracts are written in Aiken and located in the `contract/` directory. To work with contracts:
+4.  **Connect your Cardano wallet and Hydra node**
 
-```bash
-cd contract
-aiken build
-aiken check    # Run tests
-aiken docs     # Generate documentation
+## 🧑‍💻 Developer Notes
+
+-   Smart contracts are in `/contract` (Aiken)
+-   Transaction logic in `/src/txbuilders`
+-   Wallets and network config in `/src/constants`
+-   UI components in `/src/components`
+
+## 📚 Documentation & Resources
+
+-   [Hydra Protocol](https://hydra.family)
+-   [Cardano Developer Portal](https://developers.cardano.org)
+-   [Aiken Smart Contracts](https://aiken-lang.org)
+
+## 🤝 Contributing
+
+Pull requests, issues, and feedback are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+```
+MIT License
+
+Copyright (c) 2025 independenceee
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
-## Architecture
+---
 
-### Components
-
-1. **Frontend Application**
-
-    - User interface for tipping interactions
-    - Wallet connection and management
-    - Real-time balance updates
-    - WebSocket communication with Hydra node
-
-2. **Hydra Layer**
-
-    - State channel management
-    - Off-chain transaction processing
-    - Real-time transaction finality
-
-3. **Cardano Layer**
-    - Final settlement layer
-    - Security backing for Hydra heads
-    - On-chain transaction processing
-
-### Workflow
-
-1. Tipper connects wallet and opens a Hydra Head with the creator
-2. Tipper commits ADA to the session
-3. Tipper can send multiple tips off-chain with instant confirmation
-4. Balances update in real-time for both parties
-5. When finished, tipper closes the session and final balances settle on-chain
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit pull requests.
-
-## License
-
-This project is open source and available under the MIT License.
+Empower creators. Enable communities. Build the future of Cardano micropayments with HydraTipJar.
