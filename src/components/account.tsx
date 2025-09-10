@@ -33,12 +33,12 @@ export default function Account() {
         <Popover>
             <PopoverTrigger
                 className={
-                    " items-center gap-2 rounded-3xl border border-white/30 bg-gray-800/50 pr-4 pl-1 py-1 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:border-white/50 hover:bg-gray-700/50 hidden xl:inline-flex"
+                    "items-center gap-2 rounded-3xl border border-gray-300 bg-white pr-4 pl-1 py-1 text-sm font-medium text-gray-800 shadow-lg transition-all duration-200 hover:border-gray-400 hover:bg-gray-100 dark:border-white/30 dark:bg-gray-800/50 dark:text-white dark:hover:border-white/50 dark:hover:bg-gray-700/50 hidden xl:inline-flex"
                 }
             >
                 <div className={"h-8 w-8"}>
                     <Image
-                        className={"h-full w-full rounded-full dark:bg-slate-700 bg-gray-600 object-cover p-1"}
+                        className={"h-full w-full rounded-full bg-gray-600 object-cover p-1 dark:bg-slate-700"}
                         src={wallet?.icon || ""}
                         width={32}
                         height={32}
@@ -46,15 +46,18 @@ export default function Account() {
                     />
                 </div>
                 <div className="">
-                    <h2 className="text-[13px] leading-4">
+                    <h2 className="text-[13px] leading-4 text-gray-800 dark:text-white">
                         {address?.slice(0, 12)}...{address?.slice(-4)}
                     </h2>
-                    <p className={"text-left text-[14px] leading-4"}>
+                    <p className={"text-left text-[14px] leading-4 text-gray-700 dark:text-gray-300"}>
                         <CountUp start={0} end={Number((balance / DECIMAL_PLACE).toFixed(6))} decimals={6} /> ₳
                     </p>
                 </div>
             </PopoverTrigger>
-            <PopoverContent className={"mt-3 flex min-w-[315px] flex-col gap-4 rounded-xl p-5"} align="end">
+            <PopoverContent
+                className={"mt-3 flex min-w-[315px] flex-col gap-4 rounded-xl p-5 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100"}
+                align="end"
+            >
                 <div className="flex items-center gap-3">
                     <div className={"h-10 w-10"}>
                         <Image
@@ -66,50 +69,52 @@ export default function Account() {
                         />
                     </div>
                     <div>
-                        <h2 className="text-xl font-semibold text-white capitalize">{wallet?.name}</h2>
-                        <p className="text-sm text-gray-400 capitalize"> {APP_NETWORK}</p>
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white capitalize">{wallet?.name}</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 capitalize"> {APP_NETWORK}</p>
                     </div>
                 </div>
-                <Separator className="my-4 bg-slate-500" />
+                <Separator className="my-4 bg-gray-300 dark:bg-slate-500" />
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <p className="text-sm text-gray-400">Stake:</p>
-                            <span className="text-sm">{shortenString(stakeAddress || "", 11)}</span>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Stake:</p>
+                            <span className="text-sm text-gray-900 dark:text-gray-100">{shortenString(stakeAddress || "", 11)}</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-900 dark:hover:text-white">
                             <Copy className="h-4 w-4" content={stakeAddress || ""} />
                         </Button>
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <p className="text-sm text-gray-400">Change:</p>
-                            <span className="text-sm">{shortenString(address || "", 10)}</span>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Change:</p>
+                            <span className="text-sm text-gray-900 dark:text-gray-100">{shortenString(address || "", 10)}</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-900 dark:hover:text-white">
                             <Copy className="h-4 w-4" content={stakeAddress || ""} />
                         </Button>
                     </div>
                 </div>
-                <div className={"leading-0 h-[1px] overflow-hidden bg-slate-500"} />
+                <div className={"leading-0 h-[1px] overflow-hidden bg-gray-300 dark:bg-slate-500"} />
                 <div className={"relative flex items-center"}>
-                    <Link className="flex cursor-pointer items-center gap-1 text-gray-300" href={"/"}>
+                    <Link className="flex cursor-pointer items-center gap-1 text-gray-500 dark:text-gray-300" href={"/"}>
                         <MdOutlineFeedback />
                         <span className="text-[14px]">Feedback</span>
                     </Link>
                 </div>
                 <div className={"relative flex items-center"}>
-                    <Link className="flex cursor-pointer items-center gap-1 text-gray-300" href={"/"}>
+                    <Link className="flex cursor-pointer items-center gap-1 text-gray-500 dark:text-gray-300" href={"/"}>
                         <IoIosHelpCircleOutline />
                         <span className="text-[14px]">Help</span>
                     </Link>
                 </div>
 
-                <div className={"leading-0 h-[1px] overflow-hidden bg-slate-500"} />
+                <div className={"leading-0 h-[1px] overflow-hidden bg-gray-300 dark:bg-slate-500"} />
                 <div className={"flex flex-col items-center gap-3"}>
                     <Button
                         onClick={() => signOut()}
-                        className={"w-[180px] cursor-pointer rounded-[35px] bg-slate-500 text-center text-[14px] leading-[25px] text-gray-400"}
+                        className={
+                            "w-[180px] cursor-pointer rounded-[35px] bg-gray-300 dark:bg-slate-500 text-center text-[14px] leading-[25px] text-gray-700 dark:text-gray-400"
+                        }
                     >
                         Log out
                     </Button>
