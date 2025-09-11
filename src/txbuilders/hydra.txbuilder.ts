@@ -1,3 +1,4 @@
+import { mConStr0 } from "@meshsdk/core";
 import { HydraAdapter } from "~/adapter/hydra.adapter";
 import { DECIMAL_PLACE } from "~/constants/common";
 import { APP_NETWORK } from "~/constants/enviroments";
@@ -23,6 +24,14 @@ export class HydraTxBuilder extends HydraAdapter {
                     quantity: String(amount * DECIMAL_PLACE),
                 },
             ])
+            .txOutInlineDatumValue(
+                mConStr0([
+                    JSON.stringify({
+                        walletAddress: await this.meshWallet.getChangeAddress(),
+                        datetime: Date.now().toString(),
+                    }),
+                ]),
+            )
             .changeAddress(await this.meshWallet.getChangeAddress())
             .selectUtxosFrom(utxos)
             .setFee(String(0))

@@ -1,12 +1,14 @@
 "use server";
 
-import { MeshWallet } from "@meshsdk/core";
+import { MeshWallet, UTxO } from "@meshsdk/core";
 import { HydraProvider } from "@meshsdk/hydra";
 import { isNil } from "lodash";
 import { DECIMAL_PLACE } from "~/constants/common";
+import cbor from "cbor";
 import { APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
+import { Recent } from "~/types";
 import { parseError } from "~/utils/error/parse-error";
 
 export const withdraw = async function ({ walletAddress, isCreator = false }: { walletAddress: string; isCreator: boolean }) {
@@ -144,7 +146,6 @@ export const submitHydraTx = async function ({
         });
         await hydraProvider.connect();
         const txHash = await hydraProvider.submitTx(signedTx);
-        console.log(txHash);
 
         return {
             data: txHash,
@@ -192,27 +193,48 @@ export const getRecents = async function ({ walletAddress, page = 1, limit = 12 
             };
         }
 
-        const meshWallet = new MeshWallet({
-            networkId: APP_NETWORK_ID,
-            fetcher: blockfrostProvider,
-            submitter: blockfrostProvider,
-            key: {
-                type: "address",
-                address: walletAddress,
-            },
-        });
-
         const hydraProvider = new HydraProvider({
             httpUrl: HYDRA_HTTP_URL || HYDRA_HTTP_URL_SUB,
             wsUrl: HYDRA_WS_URL || HYDRA_WS_URL_SUB,
         });
 
         const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+        const total = utxos.length;
+        const utxosSlice: Array<UTxO> = utxos
+            .filter((utxo) => utxo.output.plutusData && !isNil(utxo.output.plutusData) && utxo.output.plutusData !== "")
+            .slice((page - 1) * limit, page * limit);
 
+        const data = await Promise.all(
+            utxosSlice.map(async function (utxo) {
+                if (utxo.output.plutusData) {
+                    try {
+                        const buffer = Buffer.from(utxo.output.plutusData, "hex");
+                        const decoded = await cbor.decodeFirst(buffer);
+                        const datum = decoded.value[0].toString("utf-8");
+                        const parsed = JSON.parse(datum);
+
+                        return {
+                            walletAddress: parsed.walletAddress as string,
+                            datetime: parsed.datetime as string,
+                            txHash: utxo.input.txHash,
+                            amount: utxo.output.amount.find((amt) => amt.unit === "lovelace")?.quantity
+                                ? Number(
+                                      (Number(utxo.output.amount.find((amt) => amt.unit === "lovelace")?.quantity) / DECIMAL_PLACE).toFixed(
+                                          DECIMAL_PLACE.toString().length - 1,
+                                      ),
+                                  )
+                                : 0,
+                        };
+                    } catch (error) {
+                        throw new Error(String(error));
+                    }
+                }
+            }),
+        );
         return {
-            data: null,
-            totalItem: 0,
-            totalPages: Math.ceil(0 / limit),
+            data: data,
+            totalItem: total - 1,
+            totalPages: Math.ceil(total / limit),
             currentPage: page,
         };
     } catch (error) {

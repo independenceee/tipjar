@@ -240,8 +240,8 @@ export interface Plutus {
 }
 
 export type Recent = {
-    address: string;
-    amount: string;
-    hash: string;
-    datetime: number;
+    walletAddress: string;
+    amount: number;
+    txHash: string;
+    datetime: string;
 };

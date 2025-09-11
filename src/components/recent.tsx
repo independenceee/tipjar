@@ -8,6 +8,7 @@ import { getRecents } from "~/services/hydra.service";
 import Pagination from "./pagination";
 import Image from "next/image";
 import { images } from "~/public/images*";
+import { shortenString } from "~/lib/utils";
 
 const Recent = function ({ walletAddress }: { walletAddress: string }) {
     const [page, setPage] = useState(1);
@@ -16,10 +17,12 @@ const Recent = function ({ walletAddress }: { walletAddress: string }) {
         queryFn: () =>
             getRecents({
                 walletAddress: walletAddress!,
-                limit: 12,
+                limit: 4,
                 page: page,
             }),
     });
+
+    console.log("data", data?.totalPages);
 
     return (
         <div className="h-full min-h-[calc(100%)]">
@@ -39,10 +42,14 @@ const Recent = function ({ walletAddress }: { walletAddress: string }) {
                     <div className="flex-1 overflow-y-auto">
                         {error && <NotFound />}
                         {isLoading && <Loading />}
-                        {data && data.totalItem === 0 && <NotFound />}
-                    </div>
-                    <div className="mt-12 flex justify-center">
-                        <Pagination currentPage={page} totalPages={data?.totalPages ?? 0} setCurrentPage={setPage} />
+                        {data && data.totalItem !== 0 && (
+                            <Result
+                                data={data?.data?.filter((item) => item !== undefined) as unknown as RecentType[]}
+                                page={page}
+                                setPage={setPage}
+                                totalPages={data?.totalPages}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
@@ -71,6 +78,62 @@ const Loading = function () {
                 <Image className="animate-pulse" width={100} src={images.logo} alt="not-found" />
             </div>
             <div className="text-lg font-medium dark:text-gray-200">Loading ...</div>
+        </div>
+    );
+};
+
+const Result = function ({
+    data,
+    page,
+    setPage,
+    totalPages,
+}: {
+    data: RecentType[];
+    page: number;
+    setPage: React.Dispatch<React.SetStateAction<number>>;
+    totalPages?: number;
+}) {
+    return (
+        <div className="overflow-x-hidden  ">
+            <table className="min-w-full divide-y divide-gray-200 border rounded-lg shadow-lg dark:divide-gray-700">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
+                    <tr>
+                        <th className="px-6 py-2 text-left text-xs font-bold text-gray-900 uppercase tracking-wider dark:text-white">Hash</th>
+                        <th className="px-6 py-2 text-left text-xs font-bold text-gray-900 uppercase tracking-wider dark:text-white">Address</th>
+                        <th className="px-6 py-2 text-center text-xs font-bold text-gray-900 uppercase tracking-wider dark:text-white">
+                            Amount (ADA)
+                        </th>
+                        <th className="px-6 py-4 text-center text-xs font-bold text-gray-900 uppercase tracking-wider dark:text-white">Datetime</th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-900 dark:divide-gray-700">
+                    {data.map((item) => (
+                        <tr key={item.txHash} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
+                                {shortenString(item.txHash)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {shortenString(item.walletAddress)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-green-600 dark:text-green-400">
+                                {item.amount}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400">
+                                {new Date(Number(item?.datetime)).toLocaleString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                })}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <div className="px-4 pb-4 flex justify-center items-center">
+                <Pagination currentPage={page} totalPages={totalPages ?? 0} setCurrentPage={setPage} />
+            </div>
         </div>
     );
 };
