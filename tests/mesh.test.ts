@@ -1,6 +1,6 @@
 import { MeshWallet } from "@meshsdk/core";
 import { blockfrostProvider } from "~/providers/cardano";
-import { getRecents } from "~/services/hydra.service";
+import { getBalance, getRecents } from "~/services/hydra.service";
 import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 
 describe("Save data and read data to participate in the cardano hydra process", function () {
@@ -83,8 +83,10 @@ describe("Save data and read data to participate in the cardano hydra process", 
         });
     });
 
-    test("Recent", async function () {
-        const result = await getRecents({ walletAddress: await meshWallet.getChangeAddress() });
+    test("Get Balance", async function () {
+        const result = await getBalance({
+            walletAddress: "addr_test1qzk0hl57jzwu2p0kpuqs48q2f7vty8efhcwh4l8wynckp4se2hwvvldt8r4c3cr7dcszlt2f7xs5ef2hydn25pugcgvs4843vd",
+        });
         console.log(result);
     });
 });

@@ -134,7 +134,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     describe("Transaction processing in hydra from basic to advanced", function () {
         it("Lovelace transfer from one address to another", async function () {
-            // return;
+            return;
             const hydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,

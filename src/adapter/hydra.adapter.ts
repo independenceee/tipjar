@@ -74,7 +74,7 @@ export class HydraAdapter {
      */
     public init = async () => {
         try {
-            await this.hydraProvider.connect();
+            await this.connect();
             await new Promise<void>((resolve, reject) => {
                 this.hydraProvider.onStatusChange((status) => {
                     try {

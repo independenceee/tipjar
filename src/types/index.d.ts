@@ -12,6 +12,8 @@ declare module "next-auth" {
     }
 }
 
+declare const status: readonly ["IDLE", "DISCONNECTED", "CONNECTING", "CONNECTED", "INITIALIZING", "OPEN", "CLOSED", "FANOUT_POSSIBLE", "FINAL"];
+
 export type FilterType = {
     range: DateRange;
     query: string;
@@ -245,3 +247,5 @@ export type Recent = {
     txHash: string;
     datetime: string;
 };
+
+export type HydraStatus = (typeof status)[number];

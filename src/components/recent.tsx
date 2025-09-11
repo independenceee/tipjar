@@ -22,8 +22,6 @@ const Recent = function ({ walletAddress }: { walletAddress: string }) {
             }),
     });
 
-    console.log("data", data?.totalPages);
-
     return (
         <div className="h-full min-h-[calc(100%)]">
             <div className="rounded-[24px] bg-card text-card-foreground flex flex-col h-[470px] overflow-hidden border border-blue-200/50 dark:border-blue-900/30">
@@ -39,16 +37,18 @@ const Recent = function ({ walletAddress }: { walletAddress: string }) {
                             </div>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1 overflow-hidden">
                         {error && <NotFound />}
                         {isLoading && <Loading />}
-                        {data && data.totalItem !== 0 && (
+                        {data?.data && data.totalItem !== 0 ? (
                             <Result
                                 data={data?.data?.filter((item) => item !== undefined) as unknown as RecentType[]}
                                 page={page}
                                 setPage={setPage}
                                 totalPages={data?.totalPages}
                             />
+                        ) : (
+                            <NotFound />
                         )}
                     </div>
                 </div>
@@ -59,7 +59,7 @@ const Recent = function ({ walletAddress }: { walletAddress: string }) {
 
 const NotFound = function () {
     return (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-300 space-y-4 flex-1">
+        <div className="flex flex-col overflow-hidden items-center justify-center py-12 text-gray-500 dark:text-gray-300 space-y-4 flex-1">
             <div className="rounded-full p-8 bg-sky-100">
                 <USD className="lucide lucide-dollar-sign h-12 w-12 text-blue-500" />
             </div>

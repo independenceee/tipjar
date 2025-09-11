@@ -52,7 +52,15 @@ export const withdraw = async function ({ walletAddress, isCreator = false }: { 
  * @param param { walletAddress: , isCreator: }
  * @returns
  */
-export const commit = async function ({ walletAddress, isCreator = false }: { walletAddress: string; isCreator: boolean }) {
+export const commit = async function ({
+    walletAddress,
+    isCreator = false,
+    isInit = false,
+}: {
+    walletAddress: string;
+    isCreator: boolean;
+    isInit: boolean;
+}) {
     try {
         if (isNil(walletAddress)) {
             throw new Error("walletAddress has been required.");
@@ -74,8 +82,11 @@ export const commit = async function ({ walletAddress, isCreator = false }: { wa
         });
 
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
+        await hydraTxBuilder.connect();
+        if (isInit) {
+            await hydraTxBuilder.init();
+        }
         const unsignedTx = await hydraTxBuilder.commit();
-
         return unsignedTx;
     } catch (error) {
         return error;
@@ -161,29 +172,6 @@ export const submitHydraTx = async function ({
     }
 };
 
-export const getHeadStatus = async function () {
-    try {
-        const hydraProvider = new HydraProvider({
-            httpUrl: HYDRA_HTTP_URL,
-            wsUrl: HYDRA_WS_URL,
-        });
-
-        const status = await hydraProvider.get("head");
-
-        return {
-            data: status.tag,
-            result: true,
-            message: "Get head status successfully",
-        };
-    } catch (error) {
-        return {
-            data: null,
-            result: false,
-            message: parseError(error),
-        };
-    }
-};
-
 export const getRecents = async function ({ walletAddress, page = 1, limit = 12 }: { walletAddress: string; page?: number; limit?: number }) {
     try {
         if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
@@ -232,8 +220,8 @@ export const getRecents = async function ({ walletAddress, page = 1, limit = 12 
             }),
         );
         return {
-            data: data,
-            totalItem: total - 1,
+            data: data || null,
+            totalItem: total,
             totalPages: Math.ceil(total / limit),
             currentPage: page,
         };
@@ -242,5 +230,68 @@ export const getRecents = async function ({ walletAddress, page = 1, limit = 12 
             data: null,
             message: parseError(error),
         };
+    }
+};
+
+export const getStatus = async function ({ walletAddress }: { walletAddress: string }) {
+    try {
+        if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
+            return {
+                data: null,
+                message: "Invalid wallet address provided",
+            };
+        }
+
+        const hydraProvider = new HydraProvider({
+            httpUrl: HYDRA_HTTP_URL,
+            wsUrl: HYDRA_WS_URL,
+        });
+
+        const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+
+        await hydraProvider.connect();
+        const status = await hydraProvider.get("head");
+
+        return {
+            status: status.tag as string,
+            committed: utxos.length == 0,
+        };
+    } catch (error) {
+        return {
+            data: null,
+            result: false,
+            message: parseError(error),
+        };
+    }
+};
+
+export const getBalance = async function ({ walletAddress }: { walletAddress: string }) {
+    try {
+        if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
+            return {
+                data: null,
+                message: "Invalid wallet address provided",
+            };
+        }
+
+        const hydraProvider = new HydraProvider({
+            httpUrl: HYDRA_HTTP_URL || HYDRA_HTTP_URL_SUB,
+            wsUrl: HYDRA_WS_URL || HYDRA_WS_URL_SUB,
+        });
+
+        const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+
+        const utxosSlice: Array<UTxO> = utxos.filter(
+            (utxo) => utxo.output.plutusData && !isNil(utxo.output.plutusData) && utxo.output.plutusData !== "",
+        );
+
+        return utxosSlice.reduce((total: number, utxo: UTxO) => {
+            const amounts = Array.isArray(utxo?.output?.amount) ? utxo.output.amount : [];
+            const lovelaceAsset = amounts.find((asset) => asset.unit === "lovelace");
+            const amount = Number(lovelaceAsset?.quantity || 0);
+            return total + amount;
+        }, 0);
+    } catch (error) {
+        return 0;
     }
 };

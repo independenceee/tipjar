@@ -6,24 +6,34 @@ import { memo, useCallback, useState } from "react";
 import { images } from "~/public/images*";
 import { Wallet } from "./icons";
 import { useWallet } from "~/hooks/use-wallet";
-import { send, submitHydraTx } from "~/services/hydra.service";
+import { getBalance, send, submitHydraTx } from "~/services/hydra.service";
+import { Button } from "./ui/button";
+import { useQuery } from "@tanstack/react-query";
 
-const FormTip = function () {
-    const params = useParams();
+const FormTip = function ({ tipAddress }: { tipAddress: string }) {
+    const { address, signTx } = useWallet();
     const [amount, setAmount] = useState(0);
+
     const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { value } = event.target;
         setAmount(Number(value));
     }, []);
-    const { address, signTx } = useWallet();
+
+    const { data, isLoading } = useQuery({
+        queryKey: ["status", tipAddress],
+        queryFn: () => getBalance({ walletAddress: tipAddress }),
+        enabled: !!tipAddress,
+    });
+
+    console.log("balance " + data);
 
     const handleTip = useCallback(async () => {
         try {
             const unsignedTx = await send({
                 walletAddress: address as string,
                 amount: amount,
-                tipAddress: params.address as string,
-                isCreator: true,
+                tipAddress: tipAddress as string,
+                isCreator: false,
             });
 
             const signedTx = await signTx(unsignedTx as string);
@@ -32,7 +42,7 @@ const FormTip = function () {
                 isCreator: true,
             });
         } catch (error) {
-            console.log(JSON.stringify(error));
+            console.log(error);
         }
     }, [address, amount, signTx]);
 
@@ -48,7 +58,9 @@ const FormTip = function () {
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Ada You Tiped</p>
-                                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">0.00 ADA</div>
+                                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                        {isLoading ? "0.00" : Number(data || 0)} ADA
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -76,13 +88,13 @@ const FormTip = function () {
                             />
                             <div className="text-sm text-gray-500 dark:text-gray-400">$0.00 USD</div>
                         </div>
-                        <button
+                        <Button
                             onClick={handleTip}
-                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-9 rounded-md px-3 w-full md:w-auto bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700 dark:hover:bg-slate-700"
+                            className="inline-flex flex-1 items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-9 rounded-md px-3 w-full md:w-auto bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700 dark:hover:bg-slate-700"
                             aria-disabled="true"
                         >
                             Tip Now
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
