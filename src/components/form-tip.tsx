@@ -30,8 +30,6 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
         enabled: !!tipAddress,
     });
 
-    console.log(data);
-
     const handleTip = useCallback(async () => {
         try {
             const unsignedTx = await send({

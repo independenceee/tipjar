@@ -8,7 +8,6 @@ import cbor from "cbor";
 import { APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
-import { Recent } from "~/types";
 import { parseError } from "~/utils/error/parse-error";
 
 export const withdraw = async function ({ walletAddress, isCreator = false }: { walletAddress: string; isCreator: boolean }) {
@@ -288,8 +287,6 @@ export const getBalance = async function ({ walletAddress }: { walletAddress: st
             const amount = Number(lovelaceAsset?.quantity || 0);
             return total + amount;
         }, 0);
-
-        console.log(balance);
 
         return balance;
     } catch (error) {
