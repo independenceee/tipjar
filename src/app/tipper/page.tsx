@@ -27,9 +27,9 @@ export default function TipperPage() {
                             />
                         </div>
 
-                        {error ? (
+                        {error || data?.data.length === 0 ? (
                             <div>
-                                <NotFound onClearFilters={() => {}} />
+                                <NotFound />
                             </div>
                         ) : (
                             <section className="grid gap-8 lg:grid-cols-2">
