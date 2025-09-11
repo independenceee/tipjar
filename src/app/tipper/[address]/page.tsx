@@ -12,6 +12,7 @@ import { images } from "~/public/images*";
 import { commit, send, submitHydraTx } from "~/services/hydra.service";
 import { submitTx } from "~/services/mesh.service";
 import Info from "~/components/info";
+import Recent from "~/components/recent";
 
 export default function Page() {
     const params = useParams();
@@ -126,62 +127,7 @@ export default function Page() {
                             <Info />
                         </div>
                         <div className="space-y-6 flex flex-col">
-                            <div className="h-full min-h-[calc(100%)]">
-                                <div className="rounded-[24px] bg-card text-card-foreground flex flex-col h-[470px] overflow-hidden border border-blue-200/50 dark:border-blue-900/30">
-                                    <div className="p-6 pt-0 dark:bg-slate-800 h-full flex flex-col">
-                                        <div className="p-6 -mt-2 -mx-2 mb-4 rounded-md flex flex-col md:flex-row md:items-center md:justify-between px-[8px]">
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-blue-100 dark:bg-blue-900/40 rounded-full p-3 flex items-center justify-center shadow-inner">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="lucide lucide-dollar-sign h-5 w-5 text-blue-600 dark:text-blue-400"
-                                                        aria-hidden="true"
-                                                    >
-                                                        <line x1="12" x2="12" y1="2" y2="22"></line>
-                                                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-semibold text-lg dark:text-white">Recent Tips</h3>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400">Your latest received tips</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-300 space-y-4 flex-1">
-                                            <div className="rounded-full p-8 bg-sky-100">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="24"
-                                                    height="24"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    className="lucide lucide-dollar-sign h-12 w-12 text-blue-500"
-                                                    aria-hidden="true"
-                                                >
-                                                    <line x1="12" x2="12" y1="2" y2="22"></line>
-                                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                                                </svg>
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-lg font-medium dark:text-gray-200">Tips you receive will appear here</p>
-                                                <p className="text-sm mt-2 dark:text-gray-400">Share your Tip Jar link with your audience</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <Recent walletAddress={params.address as string} />
                         </div>
                     </section>
 

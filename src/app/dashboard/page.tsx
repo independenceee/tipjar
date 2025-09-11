@@ -12,7 +12,7 @@ import { Tip, Warn } from "~/components/icons";
 import Tipper from "~/components/tipper";
 import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images";
-import { getCreator } from "~/services/creator.service";
+import { getCreator } from "~/services/tipjar.service";
 import { signup, submitTx } from "~/services/mesh.service";
 import { commit, getHeadStatus, withdraw } from "~/services/hydra.service";
 import { CreatorSchema } from "~/lib/schema";

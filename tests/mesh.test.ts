@@ -1,6 +1,6 @@
 import { MeshWallet } from "@meshsdk/core";
 import { blockfrostProvider } from "~/providers/cardano";
-import { recent } from "~/services/hydra.service";
+import { getRecents } from "~/services/hydra.service";
 import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 
 describe("Save data and read data to participate in the cardano hydra process", function () {
@@ -13,8 +13,8 @@ describe("Save data and read data to participate in the cardano hydra process", 
             key: {
                 type: "mnemonic",
                 // words: process.env.APP_MNEMONIC?.split(" ") || [],
-                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
-                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
             },
         });
     });
@@ -84,7 +84,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
     });
 
     test("Recent", async function () {
-        const result = await recent({ walletAddress: await meshWallet.getChangeAddress() });
+        const result = await getRecents({ walletAddress: await meshWallet.getChangeAddress() });
         console.log(result);
     });
 });

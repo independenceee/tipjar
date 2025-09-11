@@ -183,7 +183,7 @@ export const getHeadStatus = async function () {
     }
 };
 
-export const recent = async function ({ walletAddress, page = 1, limit = 12 }: { walletAddress: string; page?: number; limit?: number }) {
+export const getRecents = async function ({ walletAddress, page = 1, limit = 12 }: { walletAddress: string; page?: number; limit?: number }) {
     try {
         if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
             return {
@@ -207,9 +207,14 @@ export const recent = async function ({ walletAddress, page = 1, limit = 12 }: {
             wsUrl: HYDRA_WS_URL || HYDRA_WS_URL_SUB,
         });
 
-        const utxos = await hydraProvider.fetchUTxOs();
+        const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
 
-        console.log(utxos);
+        return {
+            data: null,
+            totalItem: 0,
+            totalPages: Math.ceil(0 / limit),
+            currentPage: page,
+        };
     } catch (error) {
         return {
             data: null,
