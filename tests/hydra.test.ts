@@ -60,7 +60,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         it("Ready to fanout  Snapshot finalized, ready for layer-1 distribution.", async () => {
-            return;
+            // return;
             try {
                 const hydraTxBuilder = new HydraTxBuilder({
                     meshWallet: meshWallet,
