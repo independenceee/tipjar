@@ -59,7 +59,16 @@ export class HydraAdapter {
             );
         })[0];
     };
-
+    /**
+     * @description Initializing Head creation and UTxO commitment phase.
+     */
+    public connect = async () => {
+        try {
+            await this.hydraProvider.connect();
+        } catch (error) {
+            console.log(error);
+        }
+    };
     /**
      * @description Initializing Head creation and UTxO commitment phase.
      */

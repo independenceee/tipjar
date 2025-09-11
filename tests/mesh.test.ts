@@ -1,5 +1,6 @@
 import { MeshWallet } from "@meshsdk/core";
 import { blockfrostProvider } from "~/providers/cardano";
+import { recent } from "~/services/hydra.service";
 import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 
 describe("Save data and read data to participate in the cardano hydra process", function () {
@@ -19,12 +20,12 @@ describe("Save data and read data to participate in the cardano hydra process", 
     });
     jest.setTimeout(600000000);
 
-    test("Register", async function () {
+    test("SignUp", async function () {
         return;
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
         });
-        const unsignedTx: string = await meshTxBuilder.register({
+        const unsignedTx: string = await meshTxBuilder.signup({
             assetName: "Nguyen Duy Khanh",
             metadata: {
                 author: "Nguyen Duy Khanh",
@@ -45,6 +46,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
             });
         });
     });
+
     test("Deregister", async function () {
         return;
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
@@ -79,5 +81,10 @@ describe("Save data and read data to participate in the cardano hydra process", 
                 resolve();
             });
         });
+    });
+
+    test("Recent", async function () {
+        const result = await recent({ walletAddress: await meshWallet.getChangeAddress() });
+        console.log(result);
     });
 });

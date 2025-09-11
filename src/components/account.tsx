@@ -55,7 +55,7 @@ export default function Account() {
                 </div>
             </PopoverTrigger>
             <PopoverContent
-                className={"mt-3 flex min-w-[315px] flex-col gap-4 rounded-xl p-5 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100"}
+                className={"mt-2 flex min-w-[315px] flex-col gap-4 rounded-xl p-5 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100"}
                 align="end"
             >
                 <div className="flex items-center gap-3">
@@ -73,8 +73,8 @@ export default function Account() {
                         <p className="text-sm text-gray-500 dark:text-gray-400 capitalize"> {APP_NETWORK}</p>
                     </div>
                 </div>
-                <Separator className="my-4 bg-gray-300 dark:bg-slate-500" />
-                <div className="space-y-4">
+                <Separator className="my-1 bg-gray-300 dark:bg-slate-500" />
+                <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <p className="text-sm text-gray-500 dark:text-gray-400">Stake:</p>

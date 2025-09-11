@@ -11,10 +11,10 @@ import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images*";
 import { commit, send, submitHydraTx } from "~/services/hydra.service";
 import { submitTx } from "~/services/mesh.service";
+import Info from "~/components/info";
 
 export default function Page() {
     const params = useParams();
-    console.log(params.address);
     const { address, signTx } = useWallet();
     const [amount, setAmount] = useState(0);
 
@@ -39,7 +39,6 @@ export default function Page() {
             });
 
             const signedTx = await signTx(unsignedTx as string);
-            console.log(signedTx);
             await submitHydraTx({
                 signedTx: signedTx,
                 isCreator: true,
@@ -124,101 +123,7 @@ export default function Page() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="rounded-[24px] bg-card text-card-foreground border border-emerald-200/50 dark:border-emerald-900/30 bg-gradient-to-r from-green-50/80 to-blue-50/80 dark:from-slate-900/80 dark:to-slate-800/80 dark:shadow-[0_0_15px_rgba(16,185,129,0.1)] overflow-hidden">
-                                <div className="flex flex-col space-y-1.5 bg-gradient-to-r from-green-100/80 to-blue-100/80 dark:from-slate-800/90 dark:to-slate-700/90 p-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="bg-blue-100 dark:bg-blue-900/40 rounded-full p-3 flex items-center justify-center shadow-inner">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                className="lucide lucide-coins h-5 w-5 text-blue-600 dark:text-blue-400"
-                                                aria-hidden="true"
-                                            >
-                                                <circle cx="8" cy="8" r="6"></circle>
-                                                <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
-                                                <path d="M7 6h1v4"></path>
-                                                <path d="m16.71 13.88.7.71-2.82 2.82"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-lg">Your Tip Jar</h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">Share your tip jar with your fans</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="p-4 space-y-4">
-                                    <div className="space-y-4 md:space-y-0">
-                                        <div>
-                                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-600 dark:text-gray-300">
-                                                Your Tip Jar Link
-                                            </label>
-                                            <div className="flex flex-col md:flex-row gap-2">
-                                                <input
-                                                    className="flex h-10 w-full rounded-md border px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm font-mono text-sm bg-white/80 dark:bg-slate-800/80 border-gray-200 dark:border-slate-700 shadow-sm"
-                                                    value="https://tipjar.cardano2vn.io/accounts/nguyen-duy-khanh-undefined-n4jt"
-                                                />
-                                                <div className="flex gap-2 md:gap-3">
-                                                    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border bg-background hover:text-accent-foreground h-10 px-4 py-2 border-blue-400 text-blue-500 dark:border-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="24"
-                                                            height="24"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            className="lucide lucide-qr-code h-4 w-4 mr-2"
-                                                            aria-hidden="true"
-                                                        >
-                                                            <rect width="5" height="5" x="3" y="3" rx="1"></rect>
-                                                            <rect width="5" height="5" x="16" y="3" rx="1"></rect>
-                                                            <rect width="5" height="5" x="3" y="16" rx="1"></rect>
-                                                            <path d="M21 16h-3a2 2 0 0 0-2 2v3"></path>
-                                                            <path d="M21 21v.01"></path>
-                                                            <path d="M12 7v3a2 2 0 0 1-2 2H7"></path>
-                                                            <path d="M3 12h.01"></path>
-                                                            <path d="M12 3h.01"></path>
-                                                            <path d="M12 16v.01"></path>
-                                                            <path d="M16 12h1"></path>
-                                                            <path d="M21 12v.01"></path>
-                                                            <path d="M12 21v-1"></path>
-                                                        </svg>
-                                                        Share QR
-                                                    </button>
-                                                    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary hover:bg-primary/90 h-10 px-4 py-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90 dark:hover:opacity-80 transition-opacity md:w-auto">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="24"
-                                                            height="24"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            className="lucide lucide-copy h-4 w-4 mr-2"
-                                                            aria-hidden="true"
-                                                        >
-                                                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-                                                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-                                                        </svg>
-                                                        Copy Link
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <Info />
                         </div>
                         <div className="space-y-6 flex flex-col">
                             <div className="h-full min-h-[calc(100%)]">

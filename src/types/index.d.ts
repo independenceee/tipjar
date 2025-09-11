@@ -238,3 +238,10 @@ export interface Plutus {
     validators: Validator[];
     definitions: Record<string, unknown>;
 }
+
+export type Recent = {
+    address: string;
+    amount: string;
+    hash: string;
+    datetime: number;
+};

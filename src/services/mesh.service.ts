@@ -32,7 +32,7 @@ export const signup = async function ({
         });
 
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({ meshWallet: meshWallet });
-        const unsignedTx = await meshTxBuilder.register({
+        const unsignedTx = await meshTxBuilder.signup({
             assetName: assetName,
             metadata: {
                 walletAddress: walletAddress,

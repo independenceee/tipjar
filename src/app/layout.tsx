@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "HydraTipJar - Decentralized Tipping on Cardano Hydra",
+    title: "Hydra TipJar",
     description:
         "HydraTipJar is an open-source dApp for instant, low-fee micropayments and tipping on Cardano using the Hydra Layer 2 protocol. Empower creators and communities with fast, secure, and decentralized payments.",
     keywords: [

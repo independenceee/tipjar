@@ -31,7 +31,7 @@ export const withdraw = async function ({ walletAddress, isCreator = false }: { 
         });
 
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
-
+        await hydraProvider.connect();
         await hydraTxBuilder.fanout();
         await hydraTxBuilder.final();
 
@@ -144,6 +144,7 @@ export const submitHydraTx = async function ({
         });
         await hydraProvider.connect();
         const txHash = await hydraProvider.submitTx(signedTx);
+        console.log(txHash);
 
         return {
             data: txHash,
@@ -177,6 +178,41 @@ export const getHeadStatus = async function () {
         return {
             data: null,
             result: false,
+            message: parseError(error),
+        };
+    }
+};
+
+export const recent = async function ({ walletAddress, page = 1, limit = 12 }: { walletAddress: string; page?: number; limit?: number }) {
+    try {
+        if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
+            return {
+                data: null,
+                message: "Invalid wallet address provided",
+            };
+        }
+
+        const meshWallet = new MeshWallet({
+            networkId: APP_NETWORK_ID,
+            fetcher: blockfrostProvider,
+            submitter: blockfrostProvider,
+            key: {
+                type: "address",
+                address: walletAddress,
+            },
+        });
+
+        const hydraProvider = new HydraProvider({
+            httpUrl: HYDRA_HTTP_URL || HYDRA_HTTP_URL_SUB,
+            wsUrl: HYDRA_WS_URL || HYDRA_WS_URL_SUB,
+        });
+
+        const utxos = await hydraProvider.fetchUTxOs();
+
+        console.log(utxos);
+    } catch (error) {
+        return {
+            data: null,
             message: parseError(error),
         };
     }
