@@ -36,7 +36,6 @@ const Status = function ({ walletAddress, isCreator }: { walletAddress: string; 
 
     const handleCommit = async function () {
         try {
-            console.log("commit");
             const unsignedTx = await commit({
                 walletAddress: address as string,
                 isCreator: isCreator,
