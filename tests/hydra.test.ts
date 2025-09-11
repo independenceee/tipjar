@@ -5,7 +5,7 @@ import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 
 describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communities", function () {
-    let isCreator: boolean = false;
+    let isCreator: boolean = true;
     let meshWallet: MeshWallet;
     let hydraProvider: HydraProvider;
 
@@ -106,7 +106,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     describe("Implement full fund lifecycle within Hydra head (commit funds into head and decommit them back to main chain)", () => {
         it("1- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
-            return;
+            // return;
             const hydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,

@@ -34,25 +34,23 @@ const Status = function ({ walletAddress, isCreator }: { walletAddress: string; 
         enabled: !!walletAddress,
     });
 
-    const handleCommit = useCallback(
-        async function () {
-            try {
-                const unsignedTx = await commit({
-                    walletAddress: address as string,
-                    isCreator: isCreator,
-                    isInit: data?.status?.toString().toUpperCase() === HeadStatus.IDLE,
-                });
-                const signedTx = await signTx(unsignedTx as string);
-                const { result } = await submitTx({ signedTx });
+    const handleCommit = async function () {
+        try {
+            console.log("commit");
+            const unsignedTx = await commit({
+                walletAddress: address as string,
+                isCreator: isCreator,
+                isInit: data?.status?.toString().toUpperCase() === HeadStatus.IDLE,
+            });
+            const signedTx = await signTx(unsignedTx as string);
+            const { result } = await submitTx({ signedTx });
 
-                queryClient.invalidateQueries({ queryKey: ["status", walletAddress] });
-                return result;
-            } catch (error) {
-                console.error("Commit transaction failed:", error);
-            }
-        },
-        [address, params.address, data, signTx, walletAddress, queryClient],
-    );
+            queryClient.invalidateQueries({ queryKey: ["status", walletAddress] });
+            return result;
+        } catch (error) {
+            console.error("Commit transaction failed:", error);
+        }
+    };
 
     return (
         <div className="relative w-full rounded-lg border [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 text-destructive [&>svg]:text-destructive flex flex-col md:flex-row items-start md:items-center gap-4 border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 p-4">
@@ -68,19 +66,18 @@ const Status = function ({ walletAddress, isCreator }: { walletAddress: string; 
 
             {data?.committed ? (
                 <Button
-                    onClick={handleCommit}
                     disabled={data?.committed}
                     className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center min-w-[80px] text-center"
                 >
                     Registed
                 </Button>
             ) : (
-                <Button
+                <button
                     onClick={handleCommit}
                     className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center min-w-[80px] text-center"
                 >
                     {isLoading ? <ClipLoader color={"#3b82f6"} loading={isLoading} size={15} /> : "Register"}
-                </Button>
+                </button>
             )}
         </div>
     );
