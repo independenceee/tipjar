@@ -267,30 +267,31 @@ export const getStatus = async function ({ walletAddress }: { walletAddress: str
 
 export const getBalance = async function ({ walletAddress }: { walletAddress: string }) {
     try {
-        if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
-            return {
-                data: null,
-                message: "Invalid wallet address provided",
-            };
+        if (!walletAddress || walletAddress.trim() === "") {
+            return 0;
         }
 
         const hydraProvider = new HydraProvider({
             httpUrl: HYDRA_HTTP_URL || HYDRA_HTTP_URL_SUB,
             wsUrl: HYDRA_WS_URL || HYDRA_WS_URL_SUB,
         });
-
+        await hydraProvider.connect();
         const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
 
         const utxosSlice: Array<UTxO> = utxos.filter(
             (utxo) => utxo.output.plutusData && !isNil(utxo.output.plutusData) && utxo.output.plutusData !== "",
         );
 
-        return utxosSlice.reduce((total: number, utxo: UTxO) => {
+        const balance = utxosSlice.reduce((total: number, utxo: UTxO) => {
             const amounts = Array.isArray(utxo?.output?.amount) ? utxo.output.amount : [];
             const lovelaceAsset = amounts.find((asset) => asset.unit === "lovelace");
             const amount = Number(lovelaceAsset?.quantity || 0);
             return total + amount;
         }, 0);
+
+        console.log(balance);
+
+        return balance;
     } catch (error) {
         return 0;
     }

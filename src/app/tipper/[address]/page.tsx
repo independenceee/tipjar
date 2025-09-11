@@ -23,7 +23,7 @@ export default function Page() {
 
                     <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-6 flex flex-col">
-                            <FormTip tipAddress={params?.address as string} />
+                            <FormTip tipAddress={params.address as string} />
                             <Info link={`https://tipjar.cardano2vn.io/tipper/${params.address}`} />
                         </div>
                         <div className="space-y-6 flex flex-col">

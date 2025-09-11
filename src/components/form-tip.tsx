@@ -9,6 +9,7 @@ import { useWallet } from "~/hooks/use-wallet";
 import { getBalance, send, submitHydraTx } from "~/services/hydra.service";
 import { Button } from "./ui/button";
 import { useQuery } from "@tanstack/react-query";
+import { DECIMAL_PLACE } from "~/constants/common";
 
 const FormTip = function ({ tipAddress }: { tipAddress: string }) {
     const { address, signTx } = useWallet();
@@ -20,12 +21,16 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
     }, []);
 
     const { data, isLoading } = useQuery({
-        queryKey: ["status", tipAddress],
-        queryFn: () => getBalance({ walletAddress: tipAddress }),
+        queryKey: ["status"],
+        queryFn: () =>
+            getBalance({
+                walletAddress: tipAddress,
+            }),
+
         enabled: !!tipAddress,
     });
 
-    console.log("balance " + data);
+    console.log(data);
 
     const handleTip = useCallback(async () => {
         try {
@@ -39,7 +44,7 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
             const signedTx = await signTx(unsignedTx as string);
             await submitHydraTx({
                 signedTx: signedTx,
-                isCreator: true,
+                isCreator: false,
             });
         } catch (error) {
             console.log(error);
@@ -59,7 +64,7 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                                 <div>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Ada You Tiped</p>
                                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                        {isLoading ? "0.00" : Number(data || 0)} ADA
+                                        {isLoading ? "0.00" : Number(data) / DECIMAL_PLACE} ADA
                                     </div>
                                 </div>
                             </div>
