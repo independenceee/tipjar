@@ -159,7 +159,7 @@ export class BlockfrostFetcher {
 
     async fetchAddressTransactions(walletAddress: string) {
         try {
-            const { data, status } = await this._axiosInstance.get(`/addresses/${walletAddress}/transactions`);
+            const { data, status } = await this._axiosInstance.get(`/addresses/${walletAddress}/transactions?order=desc`);
 
             if (status === 200 || status == 202) return data;
             throw parseHttpError(data);

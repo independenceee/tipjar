@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isNil } from "lodash";
 import type { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from "next";
-import type { NextAuthOptions, User } from "next-auth"; 
+import type { NextAuthOptions, User } from "next-auth";
 import NextAuth, { getServerSession } from "next-auth";
 import CredentialProvider from "next-auth/providers/credentials";
 
@@ -44,6 +44,9 @@ export const config: NextAuthOptions = {
             },
         }),
     ],
+    pages: {
+        signIn: "/login",
+    },
     callbacks: {
         async signIn({ user }: { user: User }) {
             return true;
