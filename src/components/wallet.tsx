@@ -12,7 +12,6 @@ import {
     AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import Image from "next/image";
-
 import { WalletType } from "~/types";
 import { useEffect, useState } from "react";
 import { useWallet } from "~/hooks/use-wallet";
@@ -25,18 +24,34 @@ type Props = {
 };
 export default function Wallet({ wallet, session }: Props) {
     const { signIn } = useWallet();
+    const [isEnable, setIsEnable] = useState<boolean>(false);
     const [isDownload, setIsDownload] = useState<boolean>(false);
 
     useEffect(() => {
         (async function () {
             try {
-                if (wallet?.checkApi) {
-                    setIsDownload(await wallet?.checkApi());
+                if (wallet?.isDownload) {
+                    console.log((await wallet?.isDownload()) + wallet.name);
+                    setIsDownload(await wallet?.isDownload());
                 } else {
                     setIsDownload(false);
                 }
             } catch (_) {
                 setIsDownload(false);
+            }
+        })();
+    }, []);
+
+    useEffect(() => {
+        (async function () {
+            try {
+                if (wallet?.isEnable) {
+                    setIsEnable(await wallet?.isEnable());
+                } else {
+                    setIsEnable(false);
+                }
+            } catch (_) {
+                setIsEnable(false);
             }
         })();
     }, []);
@@ -49,6 +64,12 @@ export default function Wallet({ wallet, session }: Props) {
             ) {
                 window.open(wallet?.downloadApi, "_blank");
             }
+        }
+    };
+
+    const handleEnable = async function () {
+        if (wallet?.enable && wallet.isEnable) {
+            await wallet.enable();
         }
     };
 
@@ -70,10 +91,18 @@ export default function Wallet({ wallet, session }: Props) {
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{isDownload ? "Are you absolutely sure?" : "Download " + wallet?.name + "?"}</AlertDialogTitle>
+                    <AlertDialogTitle>
+                        {isDownload
+                            ? isEnable
+                                ? " Are you absolutely sure?"
+                                : "Authorized " + wallet?.name + "?"
+                            : "Download " + wallet?.name + "?"}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                         {isDownload
-                            ? "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
+                            ? isEnable
+                                ? "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
+                                : "You authorize the wallet to interact with the interface."
                             : "Clicking 'Continue' will start the download process."}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -82,18 +111,20 @@ export default function Wallet({ wallet, session }: Props) {
                     <AlertDialogAction
                         onClick={
                             isDownload
-                                ? async () => {
-                                      await signIn(session, {
-                                          icon: wallet.image,
-                                          id: wallet.id,
-                                          name: wallet.name,
-                                          version: wallet.version || "",
-                                      });
-                                  }
+                                ? isEnable
+                                    ? async () => {
+                                          await signIn(session, {
+                                              icon: wallet.image,
+                                              id: wallet.id,
+                                              name: wallet.name,
+                                              version: wallet.version || "",
+                                          });
+                                      }
+                                    : handleEnable
                                 : handleDownload
                         }
                     >
-                        {isDownload ? "Continue" : "Download"}
+                        {isDownload ? (isEnable ? "Continue" : "Enable") : "Download"}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

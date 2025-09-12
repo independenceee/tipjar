@@ -199,8 +199,9 @@ export type WalletType = {
     balance?: number;
     address?: string;
     downloadApi?: string;
-    api?: () => Promise<void>;
-    checkApi?: () => Promise<boolean>;
+    isDownload?: () => Promise<boolean>;
+    enable?: () => Promise<void>;
+    isEnable?: () => Promise<boolean>;
 };
 
 export interface Redeemer {

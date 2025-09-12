@@ -1,5 +1,6 @@
 "use client";
 
+import { isNil } from "lodash";
 import { images } from "~/public/images";
 import { WalletType } from "~/types";
 
@@ -11,12 +12,18 @@ export const wallets: WalletType[] = [
         name: "Eternl",
         image: images.eternl,
         version: "",
-        api: async function () {
+        enable: async function () {
             return window.cardano.eternl.enable();
         },
-        checkApi: async function () {
+        isEnable: async function () {
             if (typeof window !== "undefined" && window.cardano?.eternl) {
                 return await window.cardano.eternl.isEnabled();
+            }
+            return false;
+        },
+        isDownload: async function () {
+            if (typeof window !== "undefined") {
+                return !isNil(await window.cardano?.eternl);
             }
             return false;
         },
@@ -26,12 +33,18 @@ export const wallets: WalletType[] = [
         name: "Lace",
         version: "",
         image: images.lace,
-        api: async function () {
+        enable: async function () {
             return await window.cardano.lace.enable();
         },
-        checkApi: async function () {
+        isEnable: async function () {
             if (typeof window !== "undefined" && window.cardano?.lace) {
                 return await window.cardano.lace.isEnabled();
+            }
+            return false;
+        },
+        isDownload: async function () {
+            if (typeof window !== "undefined") {
+                return !isNil(await window.cardano?.lace);
             }
             return false;
         },
@@ -41,12 +54,18 @@ export const wallets: WalletType[] = [
         name: "Nami",
         version: "",
         image: images.nami,
-        api: async function () {
+        enable: async function () {
             return await window.cardano.nami.enable();
         },
-        checkApi: async function () {
+        isEnable: async function () {
             if (typeof window !== "undefined" && window.cardano?.nami) {
                 return await window.cardano.nami.isEnabled();
+            }
+            return false;
+        },
+        isDownload: async function () {
+            if (typeof window !== "undefined") {
+                return !isNil(await window.cardano?.nami);
             }
             return false;
         },
@@ -56,12 +75,18 @@ export const wallets: WalletType[] = [
         name: "Flint",
         version: "",
         image: images.flint,
-        api: async function () {
+        enable: async function () {
             return await window.cardano.flint.enable();
         },
-        checkApi: async function () {
+        isEnable: async function () {
             if (typeof window !== "undefined" && window.cardano?.flint) {
                 return await window.cardano.flint.isEnabled();
+            }
+            return false;
+        },
+        isDownload: async function () {
+            if (typeof window !== "undefined") {
+                return !isNil(await window.cardano?.flint);
             }
             return false;
         },
@@ -72,12 +97,18 @@ export const wallets: WalletType[] = [
         name: "Gero",
         version: "",
         image: images.gero,
-        api: async function () {
+        enable: async function () {
             return await window.cardano.gero.enable();
         },
-        checkApi: async function () {
+        isEnable: async function () {
             if (typeof window !== "undefined" && window.cardano?.gero) {
                 return await window.cardano.gero.isEnabled();
+            }
+            return false;
+        },
+        isDownload: async function () {
+            if (typeof window !== "undefined" ) {
+                return !isNil(await window.cardano?.gero);
             }
             return false;
         },
@@ -87,12 +118,18 @@ export const wallets: WalletType[] = [
         name: "Typhon",
         version: "",
         image: images.typhon,
-        api: async function () {
+        enable: async function () {
             return await window.cardano.typhon.enable();
         },
-        checkApi: async function () {
+        isEnable: async function () {
             if (typeof window !== "undefined" && window.cardano?.typhon) {
                 return await window.cardano.typhon.isEnabled();
+            }
+            return false;
+        },
+        isDownload: async function () {
+            if (typeof window !== "undefined" ) {
+                return !isNil(await window.cardano?.typhon);
             }
             return false;
         },
@@ -102,12 +139,19 @@ export const wallets: WalletType[] = [
         name: "Vespr",
         image: images.vespr,
         version: "",
-        api: async function () {
+        enable: async function () {
             return await window.cardano.vespr.enable();
         },
-        checkApi: async function () {
+        isEnable: async function () {
             if (typeof window !== "undefined" && window.cardano?.vespr) {
                 return await window.cardano.vespr.isEnabled();
+            }
+            return false;
+        },
+
+        isDownload: async function () {
+            if (typeof window !== "undefined" ) {
+                return !isNil(await window.cardano?.vespr);
             }
             return false;
         },
@@ -117,12 +161,18 @@ export const wallets: WalletType[] = [
         name: "Yoroi",
         version: "",
         image: images.yoroi,
-        api: async function () {
+        enable: async function () {
             return await window.cardano.yoroi.enable();
         },
-        checkApi: async function () {
+        isEnable: async function () {
             if (typeof window !== "undefined" && window.cardano?.yoroi) {
                 return await window.cardano.yoroi.isEnabled();
+            }
+            return false;
+        },
+        isDownload: async function () {
+            if (typeof window !== "undefined") {
+                return !isNil(await window.cardano?.yoroi);
             }
             return false;
         },
@@ -132,12 +182,19 @@ export const wallets: WalletType[] = [
         name: "Nufi",
         version: "",
         image: images.nufi,
-        api: async function () {
+        enable: async function () {
             return await window.cardano.nufi.enable();
         },
-        checkApi: async function () {
+        isEnable: async function () {
             if (typeof window !== "undefined" && window.cardano?.nufi) {
                 return await window.cardano.nufi.isEnabled();
+            }
+            return false;
+        },
+
+        isDownload: async function () {
+            if (typeof window !== "undefined") {
+                return !isNil(await window.cardano?.nufi);
             }
             return false;
         },
