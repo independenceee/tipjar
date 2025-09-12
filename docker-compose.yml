@@ -1,34 +1,41 @@
 version: "3.8"
 services:
-    tipjar-app:
-        build: .
+    tipjar:
+        build:
+            context: .
+            dockerfile: Dockerfile
         container_name: tipjar-app
         ports:
             - "3000:3000"
         environment:
             NODE_ENV: production
-            # Add other environment variables as needed
         volumes:
             - .:/app
+            - ./env:/app/env
         restart: unless-stopped
         depends_on:
-            # Add other services here if needed
-            # e.g. hydra-node, cardano-node
+            # - hydra-node
+            # - cardano-node
+            # - env
 
-    # Example: hydra-node (uncomment and configure if needed)
     # hydra-node:
-    #   image: inputoutput/hydra-node:latest
-    #   ports:
-    #     - "4001:4001"
-    #   environment:
-    #     # Add Hydra node environment variables here
-    #   restart: unless-stopped
+    #     image: inputoutput/hydra-node:latest
+    #     container_name: hydra-node
+    #     ports:
+    #         - "4001:4001"
+    #     environment:
+    #         # HYDRA_NODE_ENV: production
+    #     volumes:
+    #         - ./env:/hydra/env
+    #     restart: unless-stopped
 
-    # Example: cardano-node (uncomment and configure if needed)
     # cardano-node:
-    #   image: inputoutput/cardano-node:latest
-    #   ports:
-    #     - "3001:3001"
-    #   environment:
-    #     # Add Cardano node environment variables here
-    #   restart: unless-stopped
+    #     image: inputoutput/cardano-node:latest
+    #     container_name: cardano-node
+    #     ports:
+    #         - "3001:3001"
+    #     environment:
+    #         # CARDANO_NODE_ENV: production
+    #     volumes:
+    #         - ./env:/cardano/env
+    #     restart: unless-stopped
