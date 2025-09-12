@@ -21,10 +21,13 @@ import Recent from "~/components/recent";
 import Status from "~/components/status";
 import Withdraw from "~/components/withdraw";
 import Loading from "~/components/loading";
+import { redirect } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 type Form = z.infer<typeof CreatorSchema>;
 
 export default function Dashboard() {
+    const session = useSession();
     const { address, signTx } = useWallet();
     const [loading, setLoading] = useState(false);
     const queryClient = useQueryClient();
@@ -82,6 +85,14 @@ export default function Dashboard() {
         },
         [address, signTx, queryClient],
     );
+
+    if (session.status === "loading") {
+        return <Loading />;
+    }
+
+    if (session.status === "unauthenticated") {
+        redirect("/login");
+    }
 
     return (
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">

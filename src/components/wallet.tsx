@@ -54,7 +54,7 @@ export default function Wallet({ wallet, session }: Props) {
                 setIsEnable(false);
             }
         })();
-    }, []);
+    }, [isEnable]);
 
     const handleDownload = async () => {
         if (wallet?.downloadApi) {
@@ -70,6 +70,7 @@ export default function Wallet({ wallet, session }: Props) {
     const handleEnable = async function () {
         if (wallet?.enable && wallet.isEnable) {
             await wallet.enable();
+            setIsEnable(true);
         }
     };
 

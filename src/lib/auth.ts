@@ -44,9 +44,7 @@ export const config: NextAuthOptions = {
             },
         }),
     ],
-    pages: {
-        signIn: "/login",
-    },
+
     callbacks: {
         async signIn({ user }: { user: User }) {
             return true;
