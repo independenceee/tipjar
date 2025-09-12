@@ -7,7 +7,17 @@ import { blockfrostFetcher, blockfrostProvider } from "~/providers/cardano";
 import { Transaction } from "~/types";
 import { parseError } from "~/utils/error/parse-error";
 
-export async function getCreaters({ query = "", page = 1, limit = 12 }: { query?: string; page?: number; limit?: number }) {
+export async function getCreaters({
+    query = "",
+    page = 1,
+    limit = 12,
+    walletAddress,
+}: {
+    query?: string;
+    page?: number;
+    limit?: number;
+    walletAddress?: string;
+}) {
     try {
         const utxos = await blockfrostProvider.fetchAddressUTxOs(SPEND_ADDRESS);
         const total = utxos.length;
@@ -22,8 +32,9 @@ export async function getCreaters({ query = "", page = 1, limit = 12 }: { query?
                         const decoded = await cbor.decodeFirst(buffer);
                         const datum = decoded.value[0].toString("utf-8");
                         const parsed = JSON.parse(datum);
-
-                        return parsed;
+                        if (parsed.walletAddress !== walletAddress) {
+                            return parsed;
+                        }
                     } catch (error) {
                         throw new Error(String(error));
                     }
@@ -31,8 +42,10 @@ export async function getCreaters({ query = "", page = 1, limit = 12 }: { query?
             }),
         );
 
+        const filteredData = data.filter((item) => item !== null && item !== undefined);
+
         return {
-            data: data,
+            data: filteredData,
             totalItem: total,
             totalPages: Math.ceil(total / limit),
             currentPage: page,

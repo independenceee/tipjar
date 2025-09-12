@@ -10,10 +10,15 @@ import NotFound from "~/components/not-found";
 import Header from "~/components/header";
 import Footer from "~/components/footer";
 import { getCreaters } from "~/services/tipjar.service";
+import { useWallet } from "~/hooks/use-wallet";
 
 export default function TipperPage() {
     const [page, setPage] = useState(1);
-    const { data, isLoading, error } = useQuery({ queryKey: ["getCreater", page], queryFn: () => getCreaters({ limit: 12, page }) });
+    const { address } = useWallet();
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["getCreater", page],
+        queryFn: () => getCreaters({ limit: 12, page: page, walletAddress: address as string }),
+    });
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-white transition-colors duration-300">

@@ -111,7 +111,7 @@ export default function Account() {
                 <div className={"leading-0 h-[1px] overflow-hidden bg-gray-300 dark:bg-slate-500"} />
                 <div className={"flex flex-col items-center gap-3"}>
                     <Button
-                        onClick={() => signOut({ callbackUrl: "/login" })}
+                        onClick={() => signOut()}
                         className={
                             "w-[180px] cursor-pointer rounded-[35px] bg-gray-300 dark:bg-slate-500 text-center text-[14px] leading-[25px] text-gray-700 dark:text-gray-400"
                         }

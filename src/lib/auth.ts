@@ -51,8 +51,8 @@ export const config: NextAuthOptions = {
         async signIn({ user }: { user: User }) {
             return true;
         },
-        async redirect() {
-            return "/dashboard";
+        async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
+            return baseUrl + "/dashboard";
         },
         async jwt({ user, token }: { user?: User; token: any }) {
             if (user) {
@@ -72,4 +72,5 @@ export function auth(...args: [GetServerSidePropsContext["req"], GetServerSidePr
 }
 export const GET = NextAuth(config);
 export const POST = NextAuth(config);
-export const { signOut, signIn } = NextAuth(config);
+
+export const { signIn } = NextAuth(config);

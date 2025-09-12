@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +13,7 @@ import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images";
 import { getCreator } from "~/services/tipjar.service";
 import { signup, submitTx } from "~/services/mesh.service";
-import { commit, withdraw } from "~/services/hydra.service";
+import { withdraw } from "~/services/hydra.service";
 import { CreatorSchema } from "~/lib/schema";
 import { z } from "zod";
 import Info from "~/components/info";
@@ -29,7 +28,10 @@ export default function Dashboard() {
     const { address, signTx } = useWallet();
     const [loading, setLoading] = useState(false);
     const queryClient = useQueryClient();
-
+    const { data, isLoading } = useQuery({
+        queryKey: ["creator", address],
+        queryFn: () => getCreator({ walletAddress: address as string }),
+    });
     const {
         register,
         handleSubmit,
@@ -81,11 +83,6 @@ export default function Dashboard() {
         [address, signTx, queryClient],
     );
 
-    const { data, isLoading } = useQuery({
-        queryKey: ["creator", address],
-        queryFn: () => getCreator({ walletAddress: address as string }),
-    });
-
     return (
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
             <Header />
@@ -99,7 +96,7 @@ export default function Dashboard() {
                     <div className="max-w-7xl mx-auto space-y-6 px-4 py-8">
                         <div>
                             <section className="w-full mb-6">
-                                <Status walletAddress={address as string} isCreator={true} />
+                                <Status isCreator={true} />
                             </section>
                             <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-6 flex flex-col">
@@ -219,21 +216,7 @@ export default function Dashboard() {
                 <aside className="container mx-auto py-8 px-4 pt-24">
                     <div className="max-w-7xl mx-auto space-y-6 px-4 py-8">
                         <section className="w-full mb-6">
-                            <div className="relative w-full rounded-lg border [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 text-destructive [&>svg]:text-destructive flex flex-col md:flex-row items-start md:items-center gap-4 border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 p-4">
-                                <Warn />
-                                <div className="flex-1">
-                                    <h5 className="mb-1 font-medium leading-none tracking-tight text-blue-700 dark:text-blue-200">
-                                        You need to commit some ada to register as a creator.
-                                    </h5>
-                                    <div className="text-sm [&_p]:leading-relaxed text-blue-600 dark:text-blue-300">Status:</div>
-                                </div>
-                                <button
-                                    disabled={isSubmitting}
-                                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center"
-                                >
-                                    {isSubmitting ? "Submitting..." : "Register"}
-                                </button>
-                            </div>
+                            <Status isCreator={true} />
                         </section>
                         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-6 flex flex-col">

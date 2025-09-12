@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { useWallet } from "~/hooks/use-wallet";
 import { commit, getStatus } from "~/services/hydra.service";
 import { submitTx } from "~/services/mesh.service";
@@ -22,20 +22,20 @@ export enum HeadStatus {
     FINAL = "FINAL",
 }
 
-const Status = function ({ walletAddress, isCreator }: { walletAddress: string; isCreator: boolean }) {
-    const params = useParams();
+const Status = function ({ isCreator }: { isCreator: boolean }) {
     const { address, signTx } = useWallet();
+    const [loading, setLoading] = useState(false);
 
     const queryClient = useQueryClient();
-
     const { data, isLoading } = useQuery({
-        queryKey: ["status", walletAddress],
-        queryFn: () => getStatus({ walletAddress }),
-        enabled: !!walletAddress,
+        queryKey: ["status", address],
+        queryFn: () => getStatus({ walletAddress: address as string, isCreator }),
+        enabled: !!address,
     });
 
-    const handleCommit = async function () {
+    const handleCommit = useCallback(async function () {
         try {
+            setLoading(true);
             const unsignedTx = await commit({
                 walletAddress: address as string,
                 isCreator: isCreator,
@@ -44,12 +44,14 @@ const Status = function ({ walletAddress, isCreator }: { walletAddress: string; 
             const signedTx = await signTx(unsignedTx as string);
             const { result } = await submitTx({ signedTx });
 
-            queryClient.invalidateQueries({ queryKey: ["status", walletAddress] });
+            queryClient.invalidateQueries({ queryKey: ["status"] });
             return result;
         } catch (error) {
             console.error("Commit transaction failed:", error);
+        } finally {
+            setLoading(false);
         }
-    };
+    }, []);
 
     return (
         <div className="relative w-full rounded-lg border [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 text-destructive [&>svg]:text-destructive flex flex-col md:flex-row items-start md:items-center gap-4 border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 p-4">
@@ -59,7 +61,8 @@ const Status = function ({ walletAddress, isCreator }: { walletAddress: string; 
                     You must verify your identity to withdraw funds.
                 </h5>
                 <div className="text-sm [&amp;_p]:leading-relaxed text-blue-600 dark:text-blue-300">
-                    Status: {isLoading ? <ClipLoader color={"#3b82f6"} loading={isLoading} size={13} /> : (data?.status as string)}
+                    Status:{" "}
+                    {isLoading || loading ? <ClipLoader color={"#3b82f6"} loading={isLoading || loading} size={13} /> : (data?.status as string)}
                 </div>
             </div>
 
@@ -71,12 +74,12 @@ const Status = function ({ walletAddress, isCreator }: { walletAddress: string; 
                     Registed
                 </Button>
             ) : (
-                <button
+                <Button
                     onClick={handleCommit}
                     className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center min-w-[80px] text-center"
                 >
-                    {isLoading ? <ClipLoader color={"#3b82f6"} loading={isLoading} size={15} /> : "Register"}
-                </button>
+                    {isLoading ? <ClipLoader color={"#3b82f6"} loading={loading} size={15} /> : "Register"}
+                </Button>
             )}
         </div>
     );

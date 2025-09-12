@@ -18,7 +18,7 @@ export default function Page() {
             <aside className="container mx-auto py-8 px-4 pt-24">
                 <div className="max-w-7xl mx-auto space-y-6 px-4 py-8">
                     <section className="w-full mb-6">
-                        <Status walletAddress={params.address as string} isCreator={false} />
+                        <Status  isCreator={false} />
                     </section>
 
                     <section className="grid grid-cols-1 md:grid-cols-2 gap-6">

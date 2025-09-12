@@ -17,15 +17,14 @@ type Withdraw = {
 
 const Withdraw = function ({ walletAddress }: { walletAddress: string }) {
     const [page, setPage] = useState(1);
-    const limit = 6;
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["withdraw", page],
         queryFn: () =>
             getWithdraws({
-                walletAddress,
-                limit,
-                page,
+                walletAddress: walletAddress,
+                page: page,
+                limit: 6,
             }),
     });
 
@@ -71,8 +70,8 @@ const Withdraw = function ({ walletAddress }: { walletAddress: string }) {
                                     <tr>
                                         <th className="px-4 py-3 rounded-tl-lg">Date</th>
                                         <th className="px-4 py-3">Transaction Hash</th>
-                                        <th className="px-4 py-3 rounded-tr-lg">Amount</th>
-                                        <th className="px-4 py-3 rounded-tr-lg">Type</th>
+                                        <th className="px-4 py-3 ">Amount</th>
+                                        <th className="px-4 py-3 ">Type</th>
                                         <th className="px-4 py-3 rounded-tr-lg">Status</th>
                                     </tr>
                                 </thead>

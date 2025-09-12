@@ -232,7 +232,7 @@ export const getRecents = async function ({ walletAddress, page = 1, limit = 12 
     }
 };
 
-export const getStatus = async function ({ walletAddress }: { walletAddress: string }) {
+export const getStatus = async function ({ walletAddress, isCreator }: { walletAddress: string; isCreator: boolean }) {
     try {
         if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
             return {
@@ -242,8 +242,8 @@ export const getStatus = async function ({ walletAddress }: { walletAddress: str
         }
 
         const hydraProvider = new HydraProvider({
-            httpUrl: HYDRA_HTTP_URL,
-            wsUrl: HYDRA_WS_URL,
+            httpUrl: isCreator ? HYDRA_HTTP_URL : HYDRA_HTTP_URL_SUB,
+            wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
         });
 
         const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
@@ -253,13 +253,12 @@ export const getStatus = async function ({ walletAddress }: { walletAddress: str
 
         return {
             status: status.tag as string,
-            committed: utxos.length == 0,
+            committed: utxos.length > 0,
         };
     } catch (error) {
         return {
-            data: null,
-            result: false,
-            message: parseError(error),
+            status: "Idle",
+            committed: false,
         };
     }
 };
@@ -293,4 +292,3 @@ export const getBalance = async function ({ walletAddress }: { walletAddress: st
         return 0;
     }
 };
-
