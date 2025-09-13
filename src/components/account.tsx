@@ -23,11 +23,23 @@ export default function Account() {
     useEffect(() => {
         (async () => {
             if (browserWallet) {
-                const balance = await browserWallet.getLovelace();
-                setBalance(Number(balance));
+                try {
+                    const balance = await browserWallet.getLovelace();
+                    setBalance(Number(balance));
+                } catch (error) {
+                    setTimeout(async () => {
+                        try {
+                            const retryBalance = await browserWallet.getLovelace();
+                            setBalance(Number(retryBalance));
+                        } catch (retryError) {
+                        }
+                    }, 2000);
+                }
+            } else {
+                setBalance(0);
             }
         })();
-    }, [browserWallet]);
+    }, [browserWallet, wallet]);
 
     return (
         <Popover>
