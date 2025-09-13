@@ -1,10 +1,12 @@
+import React from "react";
 import { create } from "zustand";
 import { BrowserWallet, UTxO, Wallet } from "@meshsdk/core";
 import { Session } from "next-auth";
 import { isNil } from "lodash";
 import { getNonceAddress } from "~/utils/auth";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { APP_NETWORK, APP_NETWORK_ID } from "~/constants/enviroments";
+import { wallets } from "~/constants/wallets";
 
 export interface WalletStoreType {
     wallet: Wallet | null;
@@ -17,6 +19,7 @@ export interface WalletStoreType {
     submitTx: (signedTx: string) => Promise<string>;
     disconnect: () => Promise<void>;
     signIn: (session: Session | null, wallet: Wallet) => Promise<void>;
+    syncWithSession: (session: Session | null) => Promise<void>;
 }
 
 export const useWallet = create<WalletStoreType>((set, get) => ({
@@ -101,6 +104,12 @@ export const useWallet = create<WalletStoreType>((set, get) => ({
                         address: address,
                     }),
                 });
+                set({
+                    browserWallet: browserWallet,
+                    wallet: wallet,
+                    address: address,
+                    stakeAddress: stakeAddress,
+                });
             } else if (session.user?.address !== address) {
                 throw new Error("Invalid address");
             } else {
@@ -120,4 +129,83 @@ export const useWallet = create<WalletStoreType>((set, get) => ({
     disconnect: async () => {
         set({ browserWallet: null!, wallet: null! });
     },
+
+    syncWithSession: async (session: Session | null) => {
+        if (!session?.user?.address) {
+            set({ browserWallet: null, wallet: null, address: null, stakeAddress: null });
+            return;
+        }
+
+        const { wallet, address } = get();
+        
+        if (wallet && address === session.user.address) {
+            return;
+        }
+
+        try {
+            const walletName = session.user.wallet;
+            
+            if (walletName) {
+                let browserWallet: BrowserWallet | null = null;
+                let retryCount = 0;
+                const maxRetries = 3;
+                
+                while (!browserWallet && retryCount < maxRetries) {
+                    try {
+                        browserWallet = await BrowserWallet.enable(walletName.toLowerCase());
+                    } catch (enableError) {
+                        retryCount++;
+                        
+                        if (retryCount < maxRetries) {
+                            await new Promise(resolve => setTimeout(resolve, retryCount * 1000));
+                        } else {
+                            throw enableError;
+                        }
+                    }
+                }
+                
+                if (browserWallet) {
+                    const network = await browserWallet.getNetworkId();
+                    
+                    if (network === APP_NETWORK_ID) {
+                        const address = await browserWallet.getChangeAddress();
+                        const stakeList = await browserWallet.getRewardAddresses();
+                        const stakeAddress = stakeList[0];
+
+                        const walletConfig = wallets.find(w => w.name.toLowerCase() === walletName.toLowerCase());
+                        
+                        set({
+                            browserWallet: browserWallet,
+                            wallet: {
+                                icon: walletConfig?.image || "",
+                                id: walletName,
+                                name: walletName,
+                                version: walletConfig?.version || "",
+                            },
+                            address: address,
+                            stakeAddress: stakeAddress,
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+        }
+    },
 }));
+
+export const useWalletSync = () => {
+    const { data: session } = useSession();
+    const { syncWithSession } = useWallet();
+
+    React.useEffect(() => {
+        if (session) {
+            const timeoutId = setTimeout(() => {
+                syncWithSession(session);
+            }, 1000);
+            
+            return () => clearTimeout(timeoutId);
+        } else {
+            syncWithSession(session);
+        }
+    }, [session, syncWithSession]);
+};
