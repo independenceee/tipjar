@@ -39,6 +39,6 @@ const Wallet = () => {
 };
 
 export const ConnectWallet = dynamic(() => Promise.resolve(Wallet), {
-    loading: () => <div></div>,
+    loading: () => <ClipLoader size={25} />,
     ssr: false,
 });

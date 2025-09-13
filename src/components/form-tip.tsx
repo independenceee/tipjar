@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import Image from "next/image";
 import { memo, useCallback, useState } from "react";
 import { images } from "~/public/images*";

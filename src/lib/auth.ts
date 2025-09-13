@@ -15,9 +15,9 @@ export const config: NextAuthOptions = {
         CredentialProvider({
             name: "credentials",
             credentials: {
-                data: { type: "text" },
+                data: {},
             },
-            async authorize(credentials, req) {
+            async authorize(credentials) {
                 if (!credentials?.data) {
                     return null;
                 }
@@ -46,11 +46,11 @@ export const config: NextAuthOptions = {
     ],
 
     callbacks: {
-        async signIn({ user }: { user: User }) {
+        async signIn() {
             return true;
         },
-        async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
-            return baseUrl + "/dashboard";
+        async redirect() {
+            return "/dashboard";
         },
         async jwt({ user, token }: { user?: User; token: any }) {
             if (user) {
@@ -63,7 +63,7 @@ export const config: NextAuthOptions = {
             return session;
         },
     },
-};
+} satisfies NextAuthOptions;
 
 export function auth(...args: [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]] | [NextApiRequest, NextApiResponse] | []) {
     return getServerSession(...args, config);

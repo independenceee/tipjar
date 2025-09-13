@@ -31,7 +31,6 @@ export default function Wallet({ wallet, session }: Props) {
         (async function () {
             try {
                 if (wallet?.isDownload) {
-                    console.log((await wallet?.isDownload()) + wallet.name);
                     setIsDownload(await wallet?.isDownload());
                 } else {
                     setIsDownload(false);

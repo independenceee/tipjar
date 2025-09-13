@@ -10,12 +10,13 @@ export default function BlockchainProvider({ children }: PropsWithChildren) {
     const { signIn, wallet, disconnect, browserWallet, address }: WalletStoreType = useWallet();
     const { data: session, status } = useSession();
 
+    console.log(wallet);
+
     const [wallets, setWallets] = useState<Wallet[]>([]);
     useEffect(() => {
-        async function get() {
+        (async function get() {
             setWallets(await BrowserWallet.getAvailableWallets());
-        }
-        get();
+        })();
     }, []);
 
     useEffect(() => {
@@ -40,5 +41,5 @@ export default function BlockchainProvider({ children }: PropsWithChildren) {
         })();
     }, [disconnect, session, signIn, status, wallet, wallets, browserWallet, address]);
 
-    return <>{children}</>;
+    return <main>{children}</main>;
 }

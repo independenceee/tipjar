@@ -15,7 +15,7 @@ import Wallet from "~/components/wallet";
 import { WalletType } from "~/types";
 export const dynamic = "force-dynamic";
 
-export default function SignInPage() {
+export default function SignIn() {
     const [network, setNetwork] = useState<string>("preview");
 
     useEffect(() => {

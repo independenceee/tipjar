@@ -87,7 +87,6 @@ export const useWallet = create<WalletStoreType>((set, get) => ({
             const stakeAddress = stakeList[0];
 
             if (isNil(session)) {
-                console.log(session);
                 const { data, result, message } = await getNonceAddress(address);
                 if (!result || isNil(data)) {
                     throw new Error(message);
