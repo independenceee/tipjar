@@ -38,7 +38,8 @@ export class HydraAdapter {
             fetcher: this.hydraProvider,
             submitter: this.hydraProvider,
             isHydra: true,
-        });
+        })
+        await this.connect();
     }
 
     /**

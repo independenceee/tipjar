@@ -2,14 +2,32 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { DECIMAL_PLACE } from "~/constants/common";
 import { images } from "~/public/images*";
 import { getBalance, getBalanceOther } from "~/services/hydra.service";
 import { withdraw } from "~/services/hydra.service";
 import { Button } from "./ui/button";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "./ui/alert-dialog";
+import { useWallet } from "~/hooks/use-wallet";
+import { isNil } from "lodash";
+import { redirect } from "next/navigation";
+import { routers } from "~/constants/routers";
+import { submitTx } from "~/services/mesh.service";
 
-const Balance = function ({ walletAddress }: { walletAddress: string }) {
+const Balance = function ({ walletAddress, assetName }: { walletAddress: string; assetName: string }) {
+    const { wallet, signTx } = useWallet();
+    const [loading, setLoading] = useState<boolean>(false);
     const queryClient = useQueryClient();
     const { data, isLoading } = useQuery({
         queryKey: ["status"],
@@ -34,10 +52,15 @@ const Balance = function ({ walletAddress }: { walletAddress: string }) {
     const handleWithdraw = useCallback(
         async function () {
             try {
-                await withdraw({ walletAddress: walletAddress as string, isCreator: true });
+                setLoading(true);
+                const unsignedTx = await withdraw({ walletAddress, assetName, isCreator: true });
+                const signedTx = await signTx(unsignedTx as string);
+                await submitTx({ signedTx });
                 await queryClient.invalidateQueries({ queryKey: ["creator", walletAddress] });
             } catch (error) {
                 console.log(error);
+            } finally {
+                setLoading(false);
             }
         },
         [queryClient],
@@ -71,17 +94,41 @@ const Balance = function ({ walletAddress }: { walletAddress: string }) {
                                 <div>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Balance Has Been Tipped</p>
                                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                        {isLoading ? "0.00" : Number(data) / DECIMAL_PLACE} ADA
+                                        {loading ? "0.00" : Number(data) / DECIMAL_PLACE} ADA
                                     </div>
                                 </div>
                             </div>
-                            <button
-                                onClick={handleWithdraw}
-                                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-9 rounded-md px-3 w-full md:w-auto bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700 dark:hover:bg-slate-700"
-                                aria-disabled="true"
-                            >
-                                Withdraw
-                            </button>
+
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-9 rounded-md px-3 w-full md:w-auto bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700 dark:hover:bg-slate-700"
+                                        aria-disabled="true"
+                                    >
+                                        {isLoading ? "Withdrawing" : "Withdraw"}
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                            {isNil(wallet)
+                                                ? "You want to widraw the total balance"
+                                                : "You have required connect wallet to support function."}
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            {isNil(wallet)
+                                                ? "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
+                                                : "You authorize the wallet to interact with the interface."}
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={isNil(wallet) ? redirect(routers.login) : handleWithdraw}>
+                                            {isNil(wallet) ? "Connect Wallet" : "Withdrawing"}
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </div>
                     </div>
                 </div>

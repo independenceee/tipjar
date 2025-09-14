@@ -217,7 +217,7 @@ export default function Dashboard() {
                         </section>
                         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-6 flex flex-col">
-                                <Balance walletAddress={address as string} />
+                                <Balance walletAddress={address as string} assetName={data.data?.author as string} />
                                 <Info link={`https://tipjar.cardano2vn.io/tipper/${address}`} />
                             </div>
                             <div className="space-y-6 flex flex-col">

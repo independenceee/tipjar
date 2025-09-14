@@ -47,6 +47,33 @@ export const signup = async function ({
     }
 };
 
+export const signout = async function ({ walletAddress, assetName }: { walletAddress: string; assetName: string }) {
+    try {
+        if (isNil(walletAddress)) {
+            throw new Error("User not found");
+        }
+
+        const meshWallet = new MeshWallet({
+            networkId: APP_NETWORK_ID,
+            fetcher: blockfrostProvider,
+            submitter: blockfrostProvider,
+            key: {
+                type: "address",
+                address: walletAddress,
+            },
+        });
+
+        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({ meshWallet: meshWallet });
+        const unsignedTx = await meshTxBuilder.signout({
+            assetName: assetName,
+        });
+
+        return unsignedTx;
+    } catch (error) {
+        return error;
+    }
+};
+
 export const submitTx = async ({ signedTx }: { signedTx: string }): Promise<{ data: string | null; result: boolean; message: string }> => {
     try {
         const txHash = await blockfrostProvider.submitTx(signedTx);

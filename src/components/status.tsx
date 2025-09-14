@@ -5,10 +5,23 @@ import { useWallet } from "~/hooks/use-wallet";
 import { commit, getStatus } from "~/services/hydra.service";
 import { submitTx } from "~/services/mesh.service";
 import { Warn } from "./icons";
-import { useParams } from "next/navigation";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "./ui/alert-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import { ClipLoader } from "react-spinners";
+import { isNil } from "lodash";
+import { redirect } from "next/navigation";
+import { routers } from "~/constants/routers";
 
 export enum HeadStatus {
     IDLE = "IDLE",
@@ -23,7 +36,7 @@ export enum HeadStatus {
 }
 
 const Status = function ({ isCreator }: { isCreator: boolean }) {
-    const { address, signTx } = useWallet();
+    const { address, signTx, wallet } = useWallet();
     const [loading, setLoading] = useState(false);
 
     const queryClient = useQueryClient();
@@ -66,7 +79,35 @@ const Status = function ({ isCreator }: { isCreator: boolean }) {
                 </div>
             </div>
 
-            {data?.committed ? (
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button
+                        className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-9 rounded-md px-3 w-full md:w-auto bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700 dark:hover:bg-slate-700"
+                        aria-disabled="true"
+                    >
+                        {isLoading || loading ? "Checking" : data?.committed ? "Registed" : "Register"}
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{isNil(wallet) ? "You want to paticipate" : data?.committed ? "Registed" : "Register"}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {isNil(wallet)
+                                ? "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
+                                : data?.committed
+                                ? "Registed"
+                                : "Register"}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={isNil(wallet) ? redirect(routers.login) : data?.committed ? null! : handleCommit}>
+                            {isNil(wallet) ? "Connect Wallet" : data?.committed ? "Registed" : "Register"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            {/* {data?.committed ? (
                 <Button
                     disabled={data?.committed}
                     className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center min-w-[80px] text-center"
@@ -80,7 +121,7 @@ const Status = function ({ isCreator }: { isCreator: boolean }) {
                 >
                     {isLoading ? <ClipLoader color={"#3b82f6"} loading={loading} size={15} /> : "Register"}
                 </Button>
-            )}
+            )} */}
         </div>
     );
 };

@@ -54,7 +54,7 @@ export class MeshTxBuilder extends MeshAdapter {
      * @param param { assetName: string }
      * @returns unsignedTx
      */
-    deregister = async ({ assetName }: { assetName: string }): Promise<string> => {
+    signout = async ({ assetName }: { assetName: string }): Promise<string> => {
         const { utxos, collateral, walletAddress } = await this.getWalletForTx();
         const forgingScript = ForgeScript.withOneSignature(walletAddress);
         const policyId = resolveScriptHash(forgingScript);

@@ -167,4 +167,8 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
             return;
         });
     });
+
+    describe("Hydra interaction with smartcontract", function () {
+        
+    });
 });

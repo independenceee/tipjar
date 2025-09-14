@@ -9,8 +9,17 @@ import { APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL, HYDRA
 import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 import { parseError } from "~/utils/error/parse-error";
+import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 
-export const withdraw = async function ({ walletAddress, isCreator = false }: { walletAddress: string; isCreator: boolean }) {
+export const withdraw = async function ({
+    walletAddress,
+    assetName,
+    isCreator = false,
+}: {
+    walletAddress: string;
+    assetName: string;
+    isCreator: boolean;
+}) {
     try {
         if (isNil(walletAddress)) {
             throw new Error("walletAddress has been required.");
@@ -30,17 +39,23 @@ export const withdraw = async function ({ walletAddress, isCreator = false }: { 
                 address: walletAddress,
             },
         });
-
+        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({ meshWallet: meshWallet });
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
         await hydraProvider.connect();
+        const status = await hydraProvider.get("head");
+        if (status.tag === "Idle") {
+            return await meshTxBuilder.signout({
+                assetName: assetName,
+            });
+        }
+
+        await hydraProvider.close();
         await hydraTxBuilder.fanout();
         await hydraTxBuilder.final();
 
-        return {
-            data: null,
-            result: true,
-            message: "Withdraw successfully",
-        };
+        return await meshTxBuilder.signout({
+            assetName: assetName,
+        });
     } catch (error) {
         console.log(error);
     }
@@ -83,6 +98,7 @@ export const commit = async function ({
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
         await hydraTxBuilder.connect();
         if (isInit) {
+            console.log("Init", isInit);
             await hydraTxBuilder.init();
         }
         const unsignedTx = await hydraTxBuilder.commit();
