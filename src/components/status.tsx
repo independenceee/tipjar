@@ -1,27 +1,12 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo } from "react";
+import { motion } from "framer-motion";
 import { useWallet } from "~/hooks/use-wallet";
-import { commit, getStatus } from "~/services/hydra.service";
-import { submitTx } from "~/services/mesh.service";
 import { Warn } from "./icons";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "./ui/alert-dialog";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "./ui/button";
+import { useQuery } from "@tanstack/react-query";
 import { ClipLoader } from "react-spinners";
-import { isNil } from "lodash";
-import { redirect } from "next/navigation";
-import { routers } from "~/constants/routers";
+import { getStatus } from "~/services/hydra.service";
 
 export enum HeadStatus {
     IDLE = "IDLE",
@@ -36,93 +21,53 @@ export enum HeadStatus {
 }
 
 const Status = function ({ isCreator }: { isCreator: boolean }) {
-    const { address, signTx, wallet } = useWallet();
-    const [loading, setLoading] = useState(false);
+    const { address } = useWallet();
 
-    const queryClient = useQueryClient();
     const { data, isLoading } = useQuery({
         queryKey: ["status", address],
         queryFn: () => getStatus({ walletAddress: address as string, isCreator }),
         enabled: !!address,
     });
 
-    const handleCommit = useCallback(async function () {
-        try {
-            setLoading(true);
-            const unsignedTx = await commit({
-                walletAddress: address as string,
-                isCreator: isCreator,
-                isInit: data?.status?.toString().toUpperCase() === HeadStatus.IDLE,
-            });
-            const signedTx = await signTx(unsignedTx as string);
-            const { result } = await submitTx({ signedTx });
-
-            queryClient.invalidateQueries({ queryKey: ["status"] });
-            return result;
-        } catch (error) {
-            console.error("Commit transaction failed:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
     return (
-        <div className="relative w-full rounded-lg border [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 text-destructive [&>svg]:text-destructive flex flex-col md:flex-row items-start md:items-center gap-4 border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 p-4">
-            <Warn />
-            <div className="flex-1">
-                <h5 className="mb-1 font-medium leading-none tracking-tight text-blue-700 dark:text-blue-200">
-                    You must verify your identity to withdraw funds.
-                </h5>
-                <div className="text-sm [&amp;_p]:leading-relaxed text-blue-600 dark:text-blue-300">
+        <motion.div
+            className="relative w-full flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-white dark:from-blue-900/30 dark:to-gray-900 border-l-4 border-blue-400 dark:border-blue-600 shadow-md"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+            <motion.div
+                initial={{ rotate: -45, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="text-blue-500 dark:text-blue-400 flex-shrink-0"
+            >
+                <Warn className="w-5 h-5" />
+            </motion.div>
+            <div className="flex-1 min-w-0">
+                <motion.p
+                    className="text-sm font-medium text-blue-700 dark:text-blue-200 truncate"
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                >
+                    Verify identity to withdraw funds
+                </motion.p>
+                <motion.div
+                    className="text-xs font-bold uppercase text-blue-600 dark:text-blue-300 flex items-center gap-2"
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.3, delay: 0.3 }}
+                >
                     Status:{" "}
-                    {isLoading || loading ? <ClipLoader color={"#3b82f6"} loading={isLoading || loading} size={13} /> : (data?.status as string)}
-                </div>
+                    {isLoading ? (
+                        <ClipLoader color="#3b82f6" loading={true} size={14} />
+                    ) : (
+                        <span className="bg-blue-100 dark:bg-blue-800/50 px-2 py-1 rounded-md">{data?.status as string}</span>
+                    )}
+                </motion.div>
             </div>
-
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button
-                        className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-9 rounded-md px-3 w-full md:w-auto bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700 dark:hover:bg-slate-700"
-                        aria-disabled="true"
-                    >
-                        {isLoading || loading ? "Checking" : data?.committed ? "Registed" : "Register"}
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{isNil(wallet) ? "You want to paticipate" : data?.committed ? "Registed" : "Register"}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {isNil(wallet)
-                                ? "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
-                                : data?.committed
-                                ? "Registed"
-                                : "Register"}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={isNil(wallet) ? redirect(routers.login) : data?.committed ? null! : handleCommit}>
-                            {isNil(wallet) ? "Connect Wallet" : data?.committed ? "Registed" : "Register"}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-            {/* {data?.committed ? (
-                <Button
-                    disabled={data?.committed}
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center min-w-[80px] text-center"
-                >
-                    Registed
-                </Button>
-            ) : (
-                <Button
-                    onClick={handleCommit}
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 px-4 py-2 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white mt-4 md:mt-0 self-center min-w-[80px] text-center"
-                >
-                    {isLoading ? <ClipLoader color={"#3b82f6"} loading={loading} size={15} /> : "Register"}
-                </Button>
-            )} */}
-        </div>
+        </motion.div>
     );
 };
 

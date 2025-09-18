@@ -1,6 +1,6 @@
 import { cn } from "~/lib/utils";
 
-export const Warn = function () {
+export const Warn = function ({ className }: { className?: string }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -12,7 +12,7 @@ export const Warn = function () {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="lucide lucide-badge-alert h-6 w-6 text-blue-600 dark:text-blue-300 mt-1 md:mt-0"
+            className={cn("lucide lucide-badge-alert h-6 w-6 text-blue-600 dark:text-blue-300 mt-1 md:mt-0", className)}
             aria-hidden="true"
         >
             <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path>

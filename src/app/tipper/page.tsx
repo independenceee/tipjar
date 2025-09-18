@@ -203,7 +203,7 @@ export default function TipperPage() {
                                                 hour: "2-digit",
                                                 minute: "2-digit",
                                             })}
-                                            tag={result?.tag as string}
+                                            participants={2}
                                         />
                                     </motion.div>
                                 ))}

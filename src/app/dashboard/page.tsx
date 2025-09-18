@@ -17,7 +17,7 @@ import Loading from "~/components/loading";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Balance from "~/components/balance";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
     const session = useSession();
@@ -96,7 +96,7 @@ export default function Dashboard() {
                                             hour: "2-digit",
                                             minute: "2-digit",
                                         })}
-                                        tag={"Creator"}
+                                     participants={2}
                                     />
                                 </div>
                             </motion.div>
