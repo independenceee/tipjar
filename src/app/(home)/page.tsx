@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Action from "~/components/action";
+import Contact from "~/components/contact";
 import Footer from "~/components/footer";
 import Header from "~/components/header";
 import { routers } from "~/constants/routers";
@@ -117,6 +118,202 @@ export default function Home() {
                     </div>
                     <Action title="Next" href="#trust" />
                 </section>
+
+                <section
+                    id="trust"
+                    className="relative flex min-h-screen items-center overflow-hidden border-t border-gray-200 dark:border-white/10 py-20 bg-white dark:bg-gray-900"
+                >
+                    <div className="mx-auto max-w-5xl px-6 py-8 lg:px-8">
+                        <div className="relative">
+                            <header className="mb-8">
+                                <div className="mb-4 flex items-center gap-4">
+                                    <div className="h-1 w-12 bg-gradient-to-r from-purple-500 to-transparent"></div>
+                                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white lg:text-4xl">Three Pillars of Hydra TipJar</h2>
+                                </div>
+                                <p className="max-w-3xl text-lg text-gray-600 dark:text-gray-300">
+                                    Hydra TipJar empowers decentralized tipping on Cardano, fostering trust through transparency, community
+                                    engagement, and verifiable contributions.
+                                </p>
+                            </header>
+
+                            <div className="relative">
+                                <div className="absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2 transform bg-gradient-to-b from-purple-500 via-blue-500 to-green-500"></div>
+                                <div className="space-y-8 lg:space-y-12">
+                                    <div className="relative animate-[slideInLeft_1s_ease-out_0.2s_both]">
+                                        <div className="flex flex-col items-center justify-between lg:flex-row">
+                                            <div className="w-full pr-0 lg:w-5/12 lg:pr-8">
+                                                <div className="group relative">
+                                                    <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-purple-400/20 dark:from-purple-500/30 to-purple-500/20 dark:to-purple-600/30 opacity-50 blur-xl transition duration-500 group-hover:opacity-75"></div>
+                                                    <div className="relative rounded-2xl border border-gray-200 dark:border-white/20 bg-white dark:bg-gray-800/60 p-6 shadow-2xl backdrop-blur-sm">
+                                                        <div className="mb-4 flex items-center gap-4">
+                                                            <div className="flex h-16 w-16 items-center justify-center rounded-sm bg-gradient-to-br from-purple-400 dark:from-purple-500 to-purple-500 dark:to-purple-600 text-2xl font-bold text-white shadow-xl shadow-purple-400/25 dark:shadow-purple-500/25">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="24"
+                                                                    height="24"
+                                                                    viewBox="0 0 24 24"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    className="lucide lucide-gift h-8 w-8"
+                                                                >
+                                                                    <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                                                                    <rect x="2" y="7" width="20" height="5"></rect>
+                                                                    <line x1="12" y1="22" x2="12" y2="7"></line>
+                                                                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                                                                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                                                                </svg>
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+                                                                    Transparency
+                                                                </h3>
+                                                                <div className="h-0.5 w-16 bg-purple-400 dark:bg-purple-500"></div>
+                                                            </div>
+                                                        </div>
+                                                        <p className="mb-3 text-base font-semibold text-purple-500 dark:text-purple-400">
+                                                            Can we trust the tipping process?
+                                                        </p>
+                                                        <p className="text-base leading-relaxed text-gray-600 dark:text-gray-300">
+                                                            Hydra TipJar leverages Cardano’s blockchain to ensure{" "}
+                                                            <strong className="text-gray-900 dark:text-white">
+                                                                transparent and auditable tipping
+                                                            </strong>
+                                                            , so every contribution is trackable and secure.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="relative z-10 hidden lg:block">
+                                                <div className="h-8 w-8 rounded-full border-4 border-gray-100 dark:border-gray-950 bg-purple-400 dark:bg-purple-500 shadow-lg shadow-purple-400/50 dark:shadow-purple-500/50"></div>
+                                                <div className="absolute -inset-2 animate-pulse rounded-full bg-purple-400/20 dark:bg-purple-500/20"></div>
+                                            </div>
+                                            <div className="hidden w-5/12 pl-8 lg:block">
+                                                <div className="text-right opacity-40">
+                                                    <div className="text-6xl font-bold text-purple-400/30 dark:text-purple-500/30">01</div>
+                                                    <div className="mt-2 text-purple-300/50">Clarity</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="relative animate-[slideInRight_1s_ease-out_0.4s_both]">
+                                        <div className="flex flex-col items-center justify-between lg:flex-row">
+                                            <div className="hidden w-5/12 pr-8 lg:block">
+                                                <div className="text-left opacity-40">
+                                                    <div className="text-6xl font-bold text-blue-400/30 dark:text-blue-500/30">02</div>
+                                                    <div className="mt-2 text-blue-300/50">Engagement</div>
+                                                </div>
+                                            </div>
+                                            <div className="relative z-10 hidden lg:block">
+                                                <div className="h-8 w-8 rounded-full border-4 border-gray-100 dark:border-gray-950 bg-blue-400 dark:bg-blue-500 shadow-lg shadow-blue-400/50 dark:shadow-blue-500/50"></div>
+                                                <div className="absolute -inset-2 animate-pulse rounded-full bg-blue-400/20 dark:bg-blue-500/20"></div>
+                                            </div>
+                                            <div className="w-full pl-0 lg:w-5/12 lg:pl-8">
+                                                <div className="group relative">
+                                                    <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-400/20 dark:from-blue-500/30 to-blue-500/20 dark:to-blue-600/30 opacity-50 blur-xl transition duration-500 group-hover:opacity-75"></div>
+                                                    <div className="relative rounded-2xl border border-gray-200 dark:border-white/20 bg-white dark:bg-gray-800/60 p-6 shadow-2xl backdrop-blur-sm">
+                                                        <div className="mb-4 flex items-center gap-4">
+                                                            <div className="flex h-16 w-16 items-center justify-center rounded-sm bg-gradient-to-br from-blue-400 dark:from-blue-500 to-blue-500 dark:to-blue-600 text-2xl font-bold text-white shadow-xl shadow-blue-400/25 dark:shadow-blue-500/25">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="24"
+                                                                    height="24"
+                                                                    viewBox="0 0 24 24"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    className="lucide lucide-users h-8 w-8"
+                                                                >
+                                                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                                                    <circle cx="9" cy="7" r="4"></circle>
+                                                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                                                </svg>
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Community</h3>
+                                                                <div className="h-0.5 w-16 bg-blue-400 dark:bg-blue-500"></div>
+                                                            </div>
+                                                        </div>
+                                                        <p className="mb-3 text-base font-semibold text-blue-500 dark:text-blue-400">
+                                                            Do we trust the contributors we support?
+                                                        </p>
+                                                        <p className="text-base leading-relaxed text-gray-600 dark:text-gray-300">
+                                                            Hydra TipJar enables seamless onboarding and{" "}
+                                                            <strong className="text-gray-900 dark:text-white">community-driven tipping</strong>,
+                                                            rewarding creators and fostering collaborative ecosystems.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="relative animate-[slideInLeft_1s_ease-out_0.6s_both]">
+                                        <div className="flex flex-col items-center justify-between lg:flex-row">
+                                            <div className="w-full pr-0 lg:w-5/12 lg:pr-8">
+                                                <div className="group relative">
+                                                    <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-green-400/20 dark:from-green-500/30 to-green-500/20 dark:to-green-600/30 opacity-50 blur-xl transition duration-500 group-hover:opacity-75"></div>
+                                                    <div className="relative rounded-2xl border border-gray-200 dark:border-white/20 bg-white dark:bg-gray-800/60 p-6 shadow-2xl backdrop-blur-sm">
+                                                        <div className="mb-4 flex items-center gap-4">
+                                                            <div className="flex h-16 w-16 items-center justify-center rounded-sm bg-gradient-to-br from-green-400 dark:from-green-500 to-green-500 dark:to-green-600 text-2xl font-bold text-white shadow-xl shadow-green-400/25 dark:shadow-green-500/25">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="24"
+                                                                    height="24"
+                                                                    viewBox="0 0 24 24"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    className="lucide lucide-shield-check h-8 w-8"
+                                                                >
+                                                                    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-.5 7-2.3C14.5 4.5 17 5 19 5a1 1 0 0 1 1 1z"></path>
+                                                                    <path d="m9 11 2 2 4-4"></path>
+                                                                </svg>
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+                                                                    Verification
+                                                                </h3>
+                                                                <div className="h-0.5 w-16 bg-green-400 dark:bg-green-500"></div>
+                                                            </div>
+                                                        </div>
+                                                        <p className="mb-3 text-base font-semibold text-green-500 dark:text-green-400">
+                                                            Can we trust the integrity of contributions?
+                                                        </p>
+                                                        <p className="text-base leading-relaxed text-gray-600 dark:text-gray-300">
+                                                            Blockchain-based verification ensures tips are{" "}
+                                                            <strong className="text-gray-900 dark:text-white">secure and authentic</strong>, enabling
+                                                            creators to build trust through verified contributions.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="relative z-10 hidden lg:block">
+                                                <div className="h-8 w-8 rounded-full border-4 border-gray-100 dark:border-gray-950 bg-green-400 dark:bg-green-500 shadow-lg shadow-green-400/50 dark:shadow-green-500/50"></div>
+                                                <div className="absolute -inset-2 animate-pulse rounded-full bg-green-400/20 dark:bg-green-500/20"></div>
+                                            </div>
+                                            <div className="hidden w-5/12 pl-8 lg:block">
+                                                <div className="text-right opacity-40">
+                                                    <div className="text-6xl font-bold text-green-400/30 dark:text-green-500/30">03</div>
+                                                    <div className="mt-2 text-green-300/50">Security</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <Action title="Scroll" href="#contact" />
+                </section>
+
+                <Contact />
             </main>
             <Footer />
         </main>

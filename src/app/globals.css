@@ -138,6 +138,7 @@
 * {
     scrollbar-width: thin;
     scrollbar-color: #e0e0e0 #f8f8f8;
+    scroll-behavior: smooth;
 }
 .dark * {
     scrollbar-color: #444 #222;

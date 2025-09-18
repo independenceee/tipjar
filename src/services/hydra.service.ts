@@ -50,7 +50,13 @@ export const withdraw = async function ({
         }
 
         await hydraProvider.close();
+
+        if(status.tag === "Close") {
+            
+        }
+
         await hydraTxBuilder.fanout();
+
         await hydraTxBuilder.final();
 
         return await meshTxBuilder.signout({

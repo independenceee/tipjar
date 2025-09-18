@@ -53,7 +53,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
         });
-        const unsignedTx: string = await meshTxBuilder.deregister({
+        const unsignedTx: string = await meshTxBuilder.signout({
             assetName: "Alice",
         });
 

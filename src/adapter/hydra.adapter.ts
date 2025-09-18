@@ -38,7 +38,7 @@ export class HydraAdapter {
             fetcher: this.hydraProvider,
             submitter: this.hydraProvider,
             isHydra: true,
-        })
+        });
         await this.connect();
     }
 
@@ -88,6 +88,7 @@ export class HydraAdapter {
                 });
 
                 this.hydraProvider.init().catch((error: Error) => reject(error));
+                setTimeout(() => {}, 120000);
             });
         } catch (error) {
             console.log(error);
@@ -181,7 +182,7 @@ export class HydraAdapter {
     public commit = async (): Promise<string> => {
         await this.hydraProvider.connect();
         const utxos = await this.meshWallet.getUtxos();
-        const utxoOnlyLovelace = this.getUTxOOnlyLovelace(utxos, 100_000_000);
+        const utxoOnlyLovelace = this.getUTxOOnlyLovelace(utxos, 10_000_000);
         return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
     };
 

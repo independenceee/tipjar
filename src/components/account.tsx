@@ -31,8 +31,7 @@ export default function Account() {
                         try {
                             const retryBalance = await browserWallet.getLovelace();
                             setBalance(Number(retryBalance));
-                        } catch (retryError) {
-                        }
+                        } catch (retryError) {}
                     }, 2000);
                 }
             } else {
