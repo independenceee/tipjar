@@ -14,8 +14,9 @@ describe("Save data and read data to participate in the cardano hydra process", 
             key: {
                 type: "mnemonic",
                 // words: process.env.APP_MNEMONIC?.split(" ") || [],
-                // words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
-                words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+
+                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
             },
         });
     });
@@ -68,7 +69,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
     });
 
     test("Removes", async function () {
-        return;
+        // return;
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
         });

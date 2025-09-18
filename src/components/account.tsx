@@ -26,12 +26,12 @@ export default function Account() {
                 try {
                     const balance = await browserWallet.getLovelace();
                     setBalance(Number(balance));
-                } catch (error) {
+                } catch (_) {
                     setTimeout(async () => {
                         try {
                             const retryBalance = await browserWallet.getLovelace();
                             setBalance(Number(retryBalance));
-                        } catch (retryError) {}
+                        } catch (_) {}
                     }, 2000);
                 }
             } else {

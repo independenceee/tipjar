@@ -1,5 +1,4 @@
 import { Icons } from "@/components/common/icons";
-import { Wallet } from "@meshsdk/core";
 
 declare module "next-auth" {
     interface User {

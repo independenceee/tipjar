@@ -1,7 +1,7 @@
 import { mConStr0 } from "@meshsdk/core";
 import { HydraAdapter } from "~/adapter/hydra.adapter";
 import { DECIMAL_PLACE } from "~/constants/common";
-import { APP_NETWORK, SPEND_ADDRESS } from "~/constants/enviroments";
+import { APP_NETWORK } from "~/constants/enviroments";
 
 export class HydraTxBuilder extends HydraAdapter {
     /**

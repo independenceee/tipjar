@@ -5,9 +5,9 @@ import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 
 describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communities", function () {
-    let isCreator: boolean = true;
     let meshWallet: MeshWallet;
     let hydraProvider: HydraProvider;
+    let hydraProviderSubscription: HydraProvider;
 
     beforeEach(async function () {
         meshWallet = new MeshWallet({
@@ -23,8 +23,13 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
         });
 
         hydraProvider = new HydraProvider({
-            httpUrl: isCreator ? HYDRA_HTTP_URL : HYDRA_HTTP_URL_SUB,
-            wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
+            httpUrl: HYDRA_HTTP_URL,
+            wsUrl: HYDRA_WS_URL,
+        });
+
+        hydraProviderSubscription = new HydraProvider({
+            httpUrl: HYDRA_HTTP_URL_SUB,
+            wsUrl: HYDRA_WS_URL_SUB,
         });
     });
 

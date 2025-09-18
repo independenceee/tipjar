@@ -47,7 +47,7 @@ const Withdraw = function ({ walletAddress }: { walletAddress: string }) {
 
     return (
         <div className="rounded-[24px] bg-card text-card-foreground border border-blue-200/50 dark:border-blue-900/30 col-span-2 shadow-sm">
-            <div className="p-6 flex flex-row items-center gap-3 py-4 bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-slate-800/90 dark:to-slate-700/90">
+            <div className="p-6 rounded-tl-[24px] rounded-tr-[24px] flex flex-row items-center gap-3 py-4 bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-slate-800/90 dark:to-slate-700/90">
                 <div className="rounded-full bg-[#D3E4FD] dark:bg-blue-900/30 p-2.5">
                     <ArrowRight />
                 </div>

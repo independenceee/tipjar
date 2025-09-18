@@ -7,17 +7,7 @@ import { blockfrostFetcher, blockfrostProvider } from "~/providers/cardano";
 import { Transaction } from "~/types";
 import { parseError } from "~/utils/error/parse-error";
 
-export async function getCreaters({
-    query = "",
-    page = 1,
-    limit = 12,
-    walletAddress,
-}: {
-    query?: string;
-    page?: number;
-    limit?: number;
-    walletAddress?: string;
-}) {
+export async function getCreaters({ page = 1, limit = 12, walletAddress }: { page?: number; limit?: number; walletAddress?: string }) {
     try {
         const utxos = await blockfrostProvider.fetchAddressUTxOs(SPEND_ADDRESS);
         const total = utxos.length;

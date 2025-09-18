@@ -1,4 +1,4 @@
-import { DocContent, DocContentComponentProps } from "~/constants/docs";
+import { DocContentComponentProps } from "~/constants/docs";
 import AlertBox from "~/components/ui/alert-box";
 import CodeBlock from "~/components/ui/code-block";
 

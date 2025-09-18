@@ -14,7 +14,7 @@ export default function Contact() {
                             <div className="h-1 w-12 bg-gradient-to-r from-transparent to-blue-500"></div>
                         </div>
                         <p className="max-w-2xl mx-auto text-lg text-gray-700 dark:text-gray-300">
-                            Ready to contribute to the Cardano ecosystem? We're always looking for passionate individuals who want to make a
+                            Ready to contribute to the Cardano ecosystem? We are always looking for passionate individuals who want to make a
                             difference in the blockchain space.
                         </p>
                     </div>

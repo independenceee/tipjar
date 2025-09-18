@@ -1,7 +1,6 @@
 import { IFetcher, MeshTxBuilder, MeshWallet, UTxO } from "@meshsdk/core";
 import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
 import { DECIMAL_PLACE } from "~/constants/common";
-import { APP_NETWORK } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 
 /**
@@ -67,16 +66,18 @@ export class HydraAdapter {
         try {
             await this.hydraProvider.connect();
         } catch (error) {
-            console.log(error);
+            throw error;
         }
     };
     /**
      * @description Initializing Head creation and UTxO commitment phase.
      */
-    public init = async () => {
+    public init = async (): Promise<void> => {
         try {
             await this.connect();
             await new Promise<void>((resolve, reject) => {
+                this.hydraProvider.init().catch((error: Error) => reject(error));
+
                 this.hydraProvider.onStatusChange((status) => {
                     try {
                         if (status === "INITIALIZING") {
@@ -86,12 +87,9 @@ export class HydraAdapter {
                         reject(error);
                     }
                 });
-
-                this.hydraProvider.init().catch((error: Error) => reject(error));
-                setTimeout(() => {}, 120000);
             });
         } catch (error) {
-            console.log(error);
+            throw error;
         }
     };
 
@@ -121,6 +119,7 @@ export class HydraAdapter {
     public final = async () => {
         await this.hydraProvider.connect();
         await new Promise<void>((resolve, reject) => {
+            this.hydraProvider.fanout().catch((error: Error) => reject(error));
             this.hydraProvider.onStatusChange((status) => {
                 try {
                     if (status === "FINAL") {
@@ -130,8 +129,6 @@ export class HydraAdapter {
                     reject(error);
                 }
             });
-
-            this.hydraProvider.fanout().catch((error: Error) => reject(error));
         });
     };
 

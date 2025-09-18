@@ -14,7 +14,7 @@ export const signup = async function ({
 }: {
     walletAddress: string;
     assetName: string;
-    metadata: Record<string, string>;
+    metadata: Record<string, string | number>;
 }) {
     try {
         if (isNil(walletAddress)) {
@@ -26,8 +26,8 @@ export const signup = async function ({
             fetcher: blockfrostProvider,
             submitter: blockfrostProvider,
             key: {
-                type: "address",
-                address: walletAddress,
+                type: "mnemonic",
+                words: process.env.APP_MNEMONIC?.split(" ") || [],
             },
         });
 
@@ -41,7 +41,13 @@ export const signup = async function ({
             },
         });
 
-        return unsignedTx;
+        const signedTx = await meshWallet.signTx(unsignedTx, true);
+        const txHash = await meshWallet.submitTx(signedTx);
+        await new Promise<void>(function (resolve, reject) {
+            blockfrostProvider.onTxConfirmed(txHash, () => {
+                resolve();
+            });
+        });
     } catch (error) {
         return error;
     }

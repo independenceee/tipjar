@@ -51,8 +51,7 @@ export const withdraw = async function ({
 
         await hydraProvider.close();
 
-        if(status.tag === "Close") {
-            
+        if (status.tag === "Close") {
         }
 
         await hydraTxBuilder.fanout();
@@ -347,7 +346,7 @@ export const getBalanceOther = async function ({ walletAddress }: { walletAddres
         }, 0);
 
         return balance;
-    } catch (error) {
+    } catch (_) {
         return 0;
     }
 };

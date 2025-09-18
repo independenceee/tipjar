@@ -46,7 +46,7 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
         } catch (error) {
             console.log(error);
         }
-    }, [address, amount, signTx]);
+    }, [address, amount, signTx, tipAddress]);
 
     return (
         <div className="rounded-[24px] text-card-foreground overflow-hidden border border-blue-200/50 dark:border-blue-900/30 bg-white dark:bg-slate-900">
