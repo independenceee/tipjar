@@ -26,7 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CommitSchema, TipSchema } from "~/lib/schema";
 import z from "zod";
 import Image from "next/image";
-import { images } from "~/public/images*";
+import { images } from "~/public/images";
 import CountUp from "react-countup";
 
 type Commit = z.infer<typeof CommitSchema>;
@@ -51,6 +51,18 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
         },
     });
 
+    const {
+        register: registerSend,
+        handleSubmit: handleSubmitSend,
+        formState: { errors: errorsSend, isSubmitting: isSubmittingSend },
+        setValue: setValueSend,
+    } = useForm<TipForm>({
+        resolver: zodResolver(TipSchema),
+        defaultValues: {
+            amount: 0,
+        },
+    });
+
     const { data: balance, isLoading: isLoadingBalance } = useQuery({
         queryKey: ["balance", tipAddress],
         queryFn: () => getBalance({ walletAddress: tipAddress }),
@@ -62,8 +74,6 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
         queryFn: () => getBalanceCommit({ walletAddress: address as string }),
         enabled: !!address,
     });
-
-    console.log(balanceCommit);
 
     const { data: dataUTxOOnlyLovelace, isLoading: isLoadingUTxOOnlyLovelace } = useQuery({
         queryKey: ["utxos", address],
@@ -114,49 +124,56 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
         [address, signTx, queryClient, tipAddress],
     );
 
-    const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-        if (/^\d*\.?\d{0,6}$/.test(value) && Number(value) >= 0) {
-            setAmount(value);
-        }
-    }, []);
-
-    const handleTip = useCallback(async () => {
-        if (!address) {
-            toast.error("Please connect your wallet");
-            return;
-        }
-        if (!amount || Number(amount) <= 0) {
-            toast.error("Please enter a valid amount");
-            return;
-        }
-
-        try {
-            const unsignedTx = await send({
-                walletAddress: address,
-                amount: Number(amount),
-                tipAddress: tipAddress,
-                isCreator: false,
-            });
-            if (typeof unsignedTx !== "string") {
-                throw new Error("Invalid transaction format");
+    const onSubmitSend = useCallback(
+        async function (data: TipForm) {
+            try {
+                if (!address) {
+                    toast.error("Please connect your wallet");
+                    return;
+                }
+                if (data.amount <= 0) {
+                    toast.error("Please enter a valid amount");
+                    return;
+                }
+                const unsignedTx = await send({
+                    walletAddress: address,
+                    amount: data.amount * DECIMAL_PLACE, // Convert to lovelace
+                    tipAddress: tipAddress,
+                    isCreator: false,
+                });
+                if (typeof unsignedTx !== "string") {
+                    throw new Error("Invalid transaction format");
+                }
+                const signedTx = await signTx(unsignedTx);
+                if (typeof signedTx !== "string") {
+                    throw new Error("Invalid signed transaction format");
+                }
+                await submitHydraTx({
+                    signedTx,
+                    isCreator: false,
+                });
+                toast.success("Tip sent successfully!");
+                setValueSend("amount", 0);
+                setAmount("");
+                queryClient.invalidateQueries({ queryKey: ["status", tipAddress] });
+            } catch (error) {
+                console.error("Tipping failed:", error);
+                toast.error("Failed to send tip. Please try again.");
             }
-            const signedTx = await signTx(unsignedTx);
-            if (typeof signedTx !== "string") {
-                throw new Error("Invalid signed transaction format");
+        },
+        [address, signTx, queryClient, tipAddress, setValueSend],
+    );
+
+    const handleChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const value = event.target.value;
+            if (/^\d*\.?\d{0,6}$/.test(value) && Number(value) >= 0) {
+                setAmount(value);
+                setValueSend("amount", Number(value), { shouldValidate: true });
             }
-            await submitHydraTx({
-                signedTx,
-                isCreator: false,
-            });
-            toast.success("Tip sent successfully!");
-            setAmount("");
-            queryClient.invalidateQueries({ queryKey: ["status", tipAddress] });
-        } catch (error) {
-            console.error("Tipping failed:", error);
-            toast.error("Failed to send tip. Please try again.");
-        }
-    }, [address, amount, signTx, tipAddress, queryClient]);
+        },
+        [setValueSend],
+    );
 
     const handleSelectChange = useCallback(
         (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -165,7 +182,7 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                 const { txHash, outputIndex, amount } = JSON.parse(value);
                 setValue("txHash", txHash, { shouldValidate: true });
                 setValue("outputIndex", outputIndex, { shouldValidate: true });
-                setValue("amount", Number(amount), { shouldValidate: true }); // Amount in lovelace
+                setValue("amount", Number(amount), { shouldValidate: true });
             } else {
                 setValue("txHash", "", { shouldValidate: true });
                 setValue("outputIndex", 0, { shouldValidate: true });
@@ -175,11 +192,10 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
         [setValue],
     );
 
-    // Show toast error when no UTXOs are available
     useEffect(() => {
         if (!isLoadingUTxOOnlyLovelace && !dataUTxOOnlyLovelace?.length && balance === 0) {
             toast.error("No UTXOs available for committing. Please ensure your wallet has at least 10 ADA.", {
-                id: "no-utxos", // Prevent duplicate toasts
+                id: "no-utxos",
             });
         }
     }, [isLoadingUTxOOnlyLovelace, dataUTxOOnlyLovelace, balance]);
@@ -310,7 +326,7 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                             >
                                 <option value="">-- Select amount --</option>
                                 {dataUTxOOnlyLovelace
-                                    .filter((utxo) => Number(utxo.amount) >= 10000000) // Ensure at least 10 ADA
+                                    .filter((utxo) => Number(utxo.amount) >= 10000000)
                                     .map((utxo) => (
                                         <option key={`${utxo.txHash}-${utxo.outputIndex}`} value={JSON.stringify(utxo)}>
                                             {(Number(utxo.amount) / DECIMAL_PLACE).toFixed(2)} ADA
@@ -322,7 +338,6 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                                 No UTXOs with at least 10 ADA available for committing. Please add funds to your wallet.
                             </p>
                         )}
-
                         {errors.amount && (
                             <motion.p
                                 className="text-red-500 text-xs mt-1 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded"
@@ -373,7 +388,7 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                     ) : null}
                 </form>
             ) : (
-                <div className="mt-4 rounded-lg bg-blue-50/80 p-4 dark:bg-slate-800/80">
+                <form onSubmit={handleSubmitSend(onSubmitSend)} className="mt-4 rounded-lg bg-blue-50/80 p-4 dark:bg-slate-800/80">
                     <div className="mb-3 flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Top Token</span>
                         <div className="flex items-center gap-2">
@@ -381,32 +396,45 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                             <span className="font-medium text-gray-800 dark:text-gray-300">ADA</span>
                         </div>
                     </div>
-                    <div className="flex flex-col ">
-                        <div className="flex-1">
-                            <motion.input
+                    <div className="flex flex-col">
+                        <motion.div
+                            className="relative"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: 0.2 }}
+                        >
+                            <label
+                                htmlFor="amount"
+                                className="absolute rounded-xl z-10 -top-2 left-3 bg-white dark:bg-slate-900/50 px-1 text-sm font-medium text-gray-700 dark:text-gray-200 transition-all"
+                            >
+                                Amount (ADA)
+                            </label>
+                            <input
+                                {...registerSend("amount", {
+                                    setValueAs: (value) => Number(value),
+                                })}
+                                type="number"
+                                id="amount"
+                                placeholder="Enter amount in ADA"
+                                step="0.000001"
+                                className="w-full rounded-md border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-4 text-base text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors disabled:opacity-50"
+                                disabled={isSubmittingSend}
                                 onChange={handleChange}
                                 value={amount}
-                                name="ADA"
-                                type="text"
-                                placeholder="Enter tip amount"
-                                className="w-full rounded-lg border border-blue-200/50 bg-white px-4 py-2 text-sm text-gray-800 outline-none transition-all focus:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 dark:focus:border-blue-500"
-                                variants={{
-                                    rest: { scale: 1, borderColor: "rgba(59, 130, 246, 0.5)" },
-                                    hover: { scale: 1.02, borderColor: "rgba(59, 130, 246, 1)" },
-                                    focus: { scale: 1.02, borderColor: "rgba(59, 130, 246, 1)" },
-                                }}
-                                initial="rest"
-                                whileHover="hover"
-                                whileFocus="focus"
-                                transition={{ type: "spring", stiffness: 200 }}
-                                aria-label="Enter ADA tip amount"
                             />
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                ≈ ${(Number(amount) * (adaPrice || 0.35)).toFixed(2) || "0.00"} USD
-                            </p>
-                        </div>
+                            {errorsSend.amount && (
+                                <motion.p
+                                    className="text-red-500 text-xs mt-1 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded"
+                                    initial={{ x: -10, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ duration: 0.2, type: "spring", stiffness: 100 }}
+                                >
+                                    {errorsSend.amount.message}
+                                </motion.p>
+                            )}
+                        </motion.div>
                         <motion.div
-                            className=" pt-4"
+                            className="pt-4"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: 0.9 }}
@@ -417,31 +445,30 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                                 <AlertDialogTrigger asChild>
                                     <Button
                                         type="button"
-                                        disabled={isSubmitting}
+                                        disabled={isSubmittingSend}
                                         className="w-full rounded-md bg-blue-500 dark:bg-blue-600 py-3 px-8 text-base font-semibold text-white dark:text-white shadow-lg hover:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-50 transition-colors"
                                     >
-                                        {isSubmitting ? "Submitting..." : "Commit"}
+                                        {isSubmittingSend ? "Sending..." : "Send Tip"}
                                     </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you sure you want to apply for proposal?</AlertDialogTitle>
+                                        <AlertDialogTitle>Confirm Tip</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            You need to commit at least 10 ADA to register as a proposal. This amount will be refunded when the
-                                            session ends.
+                                            You are about to send {amount || 0} ADA to address. This action cannot be undone.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleSubmit(onSubmitCommit)} disabled={isSubmitting}>
-                                            {isSubmitting ? "Committing..." : "Commit"}
+                                        <AlertDialogAction onClick={handleSubmitSend(onSubmitSend)} disabled={isSubmittingSend}>
+                                            {isSubmittingSend ? "Sending..." : "Confirm Tip"}
                                         </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
                         </motion.div>
                     </div>
-                </div>
+                </form>
             )}
         </motion.div>
     );
