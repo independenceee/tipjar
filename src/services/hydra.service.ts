@@ -105,9 +105,13 @@ export const commit = async function ({
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
         await hydraTxBuilder.connect();
 
-        console.log(status === HeadStatus.IDLE);
-        if (status === HeadStatus.IDLE) {
-            await hydraTxBuilder.init();
+        switch (status) {
+            case HeadStatus.IDLE:
+                await hydraTxBuilder.init();
+                break;
+
+            default:
+                break;
         }
 
         return await hydraTxBuilder.commit({ input: input });

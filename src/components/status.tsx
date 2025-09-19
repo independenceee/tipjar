@@ -16,11 +16,13 @@ import {
     AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { HeadStatus } from "~/constants/common";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { withdraw } from "~/services/hydra.service";
 import { deleteCreator } from "~/services/tipjar.service";
 import { useQueryClient } from "@tanstack/react-query";
+import { redirect } from "next/navigation";
+import { routers } from "~/constants/routers";
 
 const Status = function ({ title, data, loading }: { title: string; data: string; loading: boolean }) {
     const queryClient = useQueryClient();
@@ -31,12 +33,23 @@ const Status = function ({ title, data, loading }: { title: string; data: string
             await withdraw({ status: data, isCreator: true });
             await deleteCreator();
             queryClient.invalidateQueries({ queryKey: ["status"] });
+            redirect(routers.dashboard);
         } catch (error) {
             toast.error(String(error));
         } finally {
             setIsLoading(false);
         }
     };
+
+    useEffect(
+        function () {
+            if (data === HeadStatus.CLOSED) {
+                handleFanout();
+            }
+        },
+        [data],
+    );
+    
     return (
         <motion.div
             className="relative w-full flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-white dark:from-blue-900/30 dark:to-gray-900 border-l-4 border-blue-400 dark:border-blue-600 shadow-md"

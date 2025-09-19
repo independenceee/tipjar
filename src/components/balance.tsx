@@ -27,6 +27,7 @@ import { submitTx } from "~/services/mesh.service";
 import CountUp from "react-countup";
 import { DrawerContent, DrawerTrigger, Drawer } from "./ui/drawer";
 import Tipper from "./tipper";
+import { deleteCreator } from "~/services/tipjar.service";
 
 const Balance = function ({
     walletAddress,
@@ -59,8 +60,9 @@ const Balance = function ({
         try {
             setLoading(true);
             await withdraw({ status: status, isCreator: true });
-
-            await queryClient.invalidateQueries({ queryKey: ["status"] });
+            await deleteCreator();
+            queryClient.invalidateQueries({ queryKey: ["status"] });
+            redirect(routers.dashboard);
         } catch (error) {
             console.error("Withdraw failed:", error);
         } finally {
