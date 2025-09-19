@@ -4,7 +4,7 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Wallet } from "./icons";
 import { useWallet } from "~/hooks/use-wallet";
-import { commit, getBalance, getBalanceCommit, send, submitHydraTx } from "~/services/hydra.service";
+import { commit, getBalanceTip, getBalanceCommit, send, submitHydraTx } from "~/services/hydra.service";
 import { Button } from "./ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DECIMAL_PLACE } from "~/constants/common";
@@ -63,14 +63,14 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
         },
     });
 
-    const { data: balance, isLoading: isLoadingBalance } = useQuery({
-        queryKey: ["balance", tipAddress],
-        queryFn: () => getBalance({ walletAddress: tipAddress }),
+    const { data: balanceTip, isLoading: isLoadingBalance } = useQuery({
+        queryKey: ["balance-tip", tipAddress],
+        queryFn: () => getBalanceTip({ walletAddress: tipAddress }),
         enabled: !!tipAddress,
     });
 
     const { data: balanceCommit, isLoading: isLoadingBalanceCommit } = useQuery({
-        queryKey: ["balance", address],
+        queryKey: ["balance-commit", address],
         queryFn: () => getBalanceCommit({ walletAddress: address as string }),
         enabled: !!address,
     });
@@ -137,7 +137,7 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                 }
                 const unsignedTx = await send({
                     walletAddress: address,
-                    amount: data.amount * DECIMAL_PLACE, // Convert to lovelace
+                    amount: data.amount,
                     tipAddress: tipAddress,
                     isCreator: false,
                 });
@@ -193,12 +193,12 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
     );
 
     useEffect(() => {
-        if (!isLoadingUTxOOnlyLovelace && !dataUTxOOnlyLovelace?.length && balance === 0) {
+        if (!isLoadingUTxOOnlyLovelace && !dataUTxOOnlyLovelace?.length && balanceTip === 0) {
             toast.error("No UTXOs available for committing. Please ensure your wallet has at least 10 ADA.", {
                 id: "no-utxos",
             });
         }
-    }, [isLoadingUTxOOnlyLovelace, dataUTxOOnlyLovelace, balance]);
+    }, [isLoadingUTxOOnlyLovelace, dataUTxOOnlyLovelace, balanceTip]);
 
     return (
         <motion.div
@@ -260,7 +260,7 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                         <p className="text-sm text-gray-600 dark:text-gray-400">Total ADA Tipped</p>
                         <motion.p
                             className="text-xl font-semibold text-blue-600 dark:text-blue-400"
-                            key={balance}
+                            key={balanceTip}
                             variants={{
                                 initial: { opacity: 0, x: -10 },
                                 animate: { opacity: 1, x: 0, transition: { duration: 0.3 } },
@@ -273,7 +273,7 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                             ) : (
                                 <CountUp
                                     start={0}
-                                    end={(((balance as number) / DECIMAL_PLACE) as number) || 0}
+                                    end={(((balanceTip as number) / DECIMAL_PLACE) as number) || 0}
                                     duration={2.75}
                                     separator=" "
                                     decimals={4}

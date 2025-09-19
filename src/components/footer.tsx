@@ -1,9 +1,18 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { images } from "~/public/images";
 import { ThemeToggle } from "./ui/theme-toggle";
+import { usePathname } from "next/navigation";
+import { routers } from "~/constants/routers";
 
 export default function Footer() {
+    const pathname = usePathname();
+
+    if (pathname.startsWith(routers.documentation) || pathname.startsWith(routers.login)) {
+        return null;
+    }
     return (
         <div className="relative z-30 border-t dark:border-white/20 bg-white/80 dark:bg-black/20  text-gray-900 dark:text-white">
             <footer className="relative mx-auto max-w-7xl px-6 py-16 lg:px-8">

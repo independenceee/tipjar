@@ -6,7 +6,7 @@ import { useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DECIMAL_PLACE } from "~/constants/common";
 import { images } from "~/public/images*";
-import { getBalance, getBalanceOther, withdraw } from "~/services/hydra.service";
+import { getBalanceTip, getBalanceCommit, withdraw } from "~/services/hydra.service";
 import { Button } from "./ui/button";
 import {
     AlertDialog,
@@ -32,34 +32,35 @@ const Balance = function ({
     walletAddress,
     assetName,
     proposal,
+    status,
 }: {
     walletAddress: string;
     assetName: string;
+    status: string;
     proposal: Record<string, string | number>;
 }) {
     const { wallet, signTx } = useWallet();
     const [loading, setLoading] = useState<boolean>(false);
     const queryClient = useQueryClient();
 
-    const { data, isLoading } = useQuery({
-        queryKey: ["status", walletAddress],
-        queryFn: () => getBalance({ walletAddress }),
+    const { data: balanceTip, isLoading } = useQuery({
+        queryKey: ["balance", walletAddress],
+        queryFn: () => getBalanceTip({ walletAddress }),
         enabled: !!walletAddress,
     });
 
-    const { data: balanceOther, isLoading: isLoadingBalanceOther } = useQuery({
-        queryKey: ["status", walletAddress],
-        queryFn: () => getBalanceOther({ walletAddress }),
+    const { data: balanceCommit, isLoading: isLoadingBalanceOther } = useQuery({
+        queryKey: ["balance-other", walletAddress],
+        queryFn: () => getBalanceCommit({ walletAddress }),
         enabled: !!walletAddress,
     });
 
     const handleWithdraw = useCallback(async () => {
         try {
             setLoading(true);
-            const unsignedTx = await withdraw({ walletAddress, assetName, isCreator: true });
-            const signedTx = await signTx(unsignedTx as string);
-            await submitTx({ signedTx });
-            await queryClient.invalidateQueries({ queryKey: ["creator", walletAddress] });
+            await withdraw({ status: status, isCreator: true });
+
+            await queryClient.invalidateQueries({ queryKey: ["status"] });
         } catch (error) {
             console.error("Withdraw failed:", error);
         } finally {
@@ -107,7 +108,7 @@ const Balance = function ({
                             <p className="text-sm text-gray-600 dark:text-gray-400">Total Balance Tipped</p>
                             <motion.p
                                 className="text-xl font-semibold text-blue-600 dark:text-blue-400"
-                                key={data}
+                                key={balanceTip}
                                 variants={{
                                     initial: { opacity: 0, x: -10 },
                                     animate: { opacity: 1, x: 0, transition: { duration: 0.3 } },
@@ -118,7 +119,14 @@ const Balance = function ({
                                 {isLoading || loading ? (
                                     "0.00"
                                 ) : (
-                                    <CountUp start={0} end={(data as number) || 0} duration={2.75} separator=" " decimals={4} decimal="," />
+                                    <CountUp
+                                        start={0}
+                                        end={(balanceTip as number) / DECIMAL_PLACE || 0}
+                                        duration={2.75}
+                                        separator=" "
+                                        decimals={4}
+                                        decimal=","
+                                    />
                                 )}{" "}
                                 ADA
                             </motion.p>
@@ -228,7 +236,7 @@ const Balance = function ({
             <div className="mt-4 rounded-lg bg-blue-50/80 p-4 dark:bg-slate-800/80">
                 <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Balance for Tipping Others</span>
-                    <Drawer direction="bottom" >
+                    <Drawer direction="bottom">
                         <DrawerTrigger asChild>
                             <Button
                                 className="rounded-lg border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700"
@@ -261,7 +269,7 @@ const Balance = function ({
                     <div>
                         <motion.span
                             className="font-semibold text-blue-600 dark:text-blue-400"
-                            key={balanceOther}
+                            key={balanceCommit}
                             variants={{
                                 initial: { opacity: 0, x: -10 },
                                 animate: { opacity: 1, x: 0, transition: { duration: 0.3 } },
@@ -272,7 +280,14 @@ const Balance = function ({
                             {isLoadingBalanceOther ? (
                                 "0.00"
                             ) : (
-                                <CountUp start={0} end={(balanceOther as number) || 0} duration={2.75} separator=" " decimals={4} decimal="," />
+                                <CountUp
+                                    start={0}
+                                    end={(((balanceCommit as number) / DECIMAL_PLACE) as number) || 0}
+                                    duration={2.75}
+                                    separator=" "
+                                    decimals={4}
+                                    decimal=","
+                                />
                             )}{" "}
                             ADA
                         </motion.span>
@@ -283,7 +298,7 @@ const Balance = function ({
                             ) : (
                                 <CountUp
                                     start={0}
-                                    end={(balanceOther as number) * 0.92 || 0}
+                                    end={((balanceCommit as number) / DECIMAL_PLACE) * 0.92 || 0}
                                     duration={2.75}
                                     separator=" "
                                     decimals={4}

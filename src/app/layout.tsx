@@ -1,6 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Footer from "~/components/footer";
+import Header from "~/components/header";
 import { auth } from "~/lib/auth";
 import Provider from "~/providers";
 const geistSans = Geist({
@@ -68,7 +70,13 @@ export default async function RootLayout({
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-                <Provider session={session}>{children}</Provider>
+                <Provider session={session}>
+                    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+                        <Header />
+                        <aside>{children}</aside>
+                        <Footer />
+                    </main>
+                </Provider>
             </body>
         </html>
     );

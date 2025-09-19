@@ -5,63 +5,51 @@ import { HydraProvider } from "@meshsdk/hydra";
 import { isNil } from "lodash";
 import { DECIMAL_PLACE, HeadStatus } from "~/constants/common";
 import cbor from "cbor";
-import { APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
+import { APP_MNEMONIC, APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 
 import { parseError } from "~/utils/error/parse-error";
-import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 
-export const withdraw = async function ({
-    walletAddress,
-    assetName,
-    isCreator = false,
-}: {
-    walletAddress: string;
-    assetName: string;
-    isCreator: boolean;
-}) {
+export const withdraw = async function ({ status, isCreator = false }: { status: string; isCreator: boolean }) {
     try {
-        if (isNil(walletAddress)) {
-            throw new Error("walletAddress has been required.");
-        }
+        const meshWallet = new MeshWallet({
+            networkId: APP_NETWORK_ID,
+            fetcher: blockfrostProvider,
+            submitter: blockfrostProvider,
+            key: {
+                type: "mnemonic",
+                words: APP_MNEMONIC?.split(" ") || [],
+            },
+        });
 
         const hydraProvider = new HydraProvider({
             httpUrl: isCreator ? HYDRA_HTTP_URL : HYDRA_HTTP_URL_SUB,
             wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
         });
 
-        const meshWallet = new MeshWallet({
-            networkId: APP_NETWORK_ID,
-            fetcher: blockfrostProvider,
-            submitter: blockfrostProvider,
-            key: {
-                type: "address",
-                address: walletAddress,
-            },
+        const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
+            meshWallet: meshWallet,
+            hydraProvider: hydraProvider,
         });
-        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({ meshWallet: meshWallet });
-        const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
+
         await hydraProvider.connect();
-        const status = await hydraProvider.get("head");
-        if (status.tag === "Idle") {
-            return await meshTxBuilder.signout({
-                assetName: assetName,
-            });
+        switch (status) {
+            case HeadStatus.OPEN:
+                await hydraProvider.close();
+                await hydraTxBuilder.fanout();
+                await hydraTxBuilder.final();
+                break;
+            case HeadStatus.CLOSED:
+                await hydraTxBuilder.fanout();
+                await hydraTxBuilder.final();
+                break;
+            case HeadStatus.FANOUT_POSSIBLE:
+                await hydraTxBuilder.final();
+                break;
+            default:
+                break;
         }
-
-        await hydraProvider.close();
-
-        if (status.tag === "Close") {
-        }
-
-        await hydraTxBuilder.fanout();
-
-        await hydraTxBuilder.final();
-
-        return await meshTxBuilder.signout({
-            assetName: assetName,
-        });
     } catch (error) {
         console.log(error);
     }
@@ -282,15 +270,13 @@ export const getStatus = async function ({ walletAddress, isCreator }: { walletA
         await hydraProvider.connect();
         const status = await hydraProvider.get("head");
 
-        console.log(status.tag);
-
-        return status.tag as string;
+        return (status.tag as string).toUpperCase();
     } catch (error) {
         return "Idle";
     }
 };
 
-export const getBalance = async function ({ walletAddress }: { walletAddress: string }) {
+export const getBalanceTip = async function ({ walletAddress }: { walletAddress: string }) {
     try {
         if (!walletAddress || walletAddress.trim() === "") {
             return 0;
@@ -316,43 +302,6 @@ export const getBalance = async function ({ walletAddress }: { walletAddress: st
 
         return balance;
     } catch (error) {
-        return 0;
-    }
-};
-
-export const getBalanceOther = async function ({ walletAddress }: { walletAddress: string }) {
-    try {
-        if (!walletAddress || walletAddress.trim() === "") {
-            return 0;
-        }
-
-        const hydraProvider = new HydraProvider({
-            httpUrl: HYDRA_HTTP_URL || HYDRA_HTTP_URL_SUB,
-            wsUrl: HYDRA_WS_URL || HYDRA_WS_URL_SUB,
-        });
-        await hydraProvider.connect();
-        const utxos = await hydraProvider.fetchUTxOs();
-
-        const utxosSlice: Array<UTxO> = utxos.filter(async function (utxo) {
-            if (utxo.output.plutusData) {
-                const buffer = Buffer.from(utxo.output.plutusData, "hex");
-                const decoded = await cbor.decodeFirst(buffer);
-                const datum = decoded.value[0].toString("utf-8");
-                const parsed = JSON.parse(datum);
-
-                return parsed.walletAddress === walletAddress;
-            }
-        });
-
-        const balance = utxosSlice.reduce((total: number, utxo: UTxO) => {
-            const amounts = Array.isArray(utxo?.output?.amount) ? utxo.output.amount : [];
-            const lovelaceAsset = amounts.find((asset) => asset.unit === "lovelace");
-            const amount = Number(lovelaceAsset?.quantity || 0);
-            return total + amount;
-        }, 0);
-
-        return balance;
-    } catch (_) {
         return 0;
     }
 };

@@ -31,5 +31,5 @@ export const CommitSchema = z
     .required({ txHash: true, outputIndex: true, amount: true });
 
 export const TipSchema = z.object({
-    amount: z.number().min(2000000, "Must commit at least 2 ADA"),
+    amount: z.number().min(2, "Must commit at least 2 ADA"),
 });

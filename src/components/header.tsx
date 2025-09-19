@@ -26,6 +26,10 @@ export default function Header() {
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     const closeMenu = () => setIsMenuOpen(false);
 
+    if (pathname.startsWith(routers.documentation) || pathname.startsWith(routers.login)) {
+        return null;
+    }
+
     return (
         <>
             <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3 border-b border-gray-200/50 dark:border-slate-700/50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-sm">

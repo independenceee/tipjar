@@ -219,6 +219,32 @@ export async function createProposal({
     }
 }
 
+export async function deleteCreator() {
+    try {
+        const meshWallet = new MeshWallet({
+            networkId: APP_NETWORK_ID,
+            fetcher: blockfrostProvider,
+            submitter: blockfrostProvider,
+            key: {
+                type: "mnemonic",
+                words: process.env.APP_MNEMONIC?.split(" ") || [],
+            },
+        });
+
+        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({ meshWallet: meshWallet });
+        const unsignedTx = await meshTxBuilder.remove();
+
+        const signedTx = await meshWallet.signTx(unsignedTx, true);
+        const txHash = await meshWallet.submitTx(signedTx);
+        await new Promise<void>(function (resolve, reject) {
+            blockfrostProvider.onTxConfirmed(txHash, () => {
+                resolve();
+            });
+        });
+    } catch (error) {
+        throw error;
+    }
+}
 /**
  * Fetches withdraw transactions for a given wallet address with pagination.
  *
