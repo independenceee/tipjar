@@ -6,10 +6,9 @@ import { useState } from "react";
 import TipperSkeleton from "~/components/tipper-skeleton";
 import Pagination from "~/components/pagination";
 import { useQuery } from "@tanstack/react-query";
-import NotFound from "~/components/not-found";
 import Header from "~/components/header";
 import Footer from "~/components/footer";
-import { getCreaters } from "~/services/tipjar.service";
+import { getProposals } from "~/services/tipjar.service";
 import { useWallet } from "~/hooks/use-wallet";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -19,8 +18,8 @@ export default function TipperPage() {
     const [page, setPage] = useState(1);
     const { address } = useWallet();
     const { data, isLoading, error } = useQuery({
-        queryKey: ["getCreater", page],
-        queryFn: () => getCreaters({ limit: 12, page: page, walletAddress: address as string }),
+        queryKey: ["proposals", page],
+        queryFn: () => getProposals({ limit: 12, page: page, walletAddress: address as string }),
     });
 
     return (

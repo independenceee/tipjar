@@ -156,3 +156,53 @@
         @apply bg-background text-foreground;
     }
 }
+
+select option {
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.dark select option {
+    background: #1e293b;
+    color: #f9fafb;
+}
+
+select option:checked {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.dark select option:checked {
+    background: #3b82f6;
+    color: #f9fafb;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: transparent;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: "▼";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4b5563; 
+    font-size: 12px;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.dark .select-wrapper::after {
+    color: #e2e8f0; 
+}

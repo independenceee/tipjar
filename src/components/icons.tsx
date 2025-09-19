@@ -22,7 +22,7 @@ export const Warn = function ({ className }: { className?: string }) {
     );
 };
 
-export const ArrowRight = function () {
+export const ArrowRight = function ({ className }: { className?: string }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -34,7 +34,7 @@ export const ArrowRight = function () {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="lucide lucide-arrow-right-to-line h-5 w-5 text-blue-600"
+            className={cn("lucide lucide-arrow-right-to-line h-5 w-5 text-blue-600", className)}
             aria-hidden="true"
         >
             <path d="M17 12H3"></path>

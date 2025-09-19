@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { QR, Tip } from "./icons";
 import { Button } from "./ui/button";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
@@ -22,118 +23,193 @@ export default function Info({
         try {
             await navigator.clipboard.writeText(link);
             setCopyStatus("copied");
-            setTimeout(() => setCopyStatus("idle"), 2000); // Reset after 2 seconds
+            setTimeout(() => setCopyStatus("idle"), 2000);
         } catch (err) {
             setCopyStatus("error");
             setTimeout(() => setCopyStatus("idle"), 2000);
         }
     };
+
     return (
-        <div className="rounded-[24px] bg-card text-card-foreground border border-emerald-200/50 dark:border-emerald-900/30 bg-gradient-to-r from-green-50/80 to-blue-50/80 dark:from-slate-900/80 dark:to-slate-800/80 dark:shadow-[0_0_15px_rgba(16,185,129,0.1)] overflow-hidden">
-            <div className="flex flex-col space-y-1.5 bg-gradient-to-r from-green-100/80 to-blue-100/80 dark:from-slate-800/90 dark:to-slate-700/90 p-4">
-                <div className="flex items-center gap-2">
-                    <div className="bg-blue-100 dark:bg-blue-900/40 rounded-full p-3 flex items-center justify-center shadow-inner">
-                        <Tip />
-                    </div>
+        <motion.div
+            className="rounded-2xl border border-blue-200/50 bg-white p-6 shadow-lg dark:border-blue-900/30 dark:bg-slate-900"
+            variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+            }}
+            initial="hidden"
+            animate="visible"
+        >
+            {/* Header Section */}
+            <div className="rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 p-4 dark:from-blue-900/50 dark:to-purple-900/50">
+                <div className="flex items-center gap-3">
+                    <motion.div
+                        className="rounded-full bg-white/90 p-2 dark:bg-slate-800/90"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                    >
+                        <Tip className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    </motion.div>
                     <div>
-                        <h3 className="font-semibold text-lg">{title}</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{title}</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
                     </div>
                 </div>
             </div>
-            <div className="p-4 space-y-4">
-                <div className="space-y-4 md:space-y-0">
-                    <div>
-                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-600 dark:text-gray-300">
-                            Your Tip Jar Link
-                        </label>
-                        <div className="flex flex-col md:flex-row gap-2">
-                            <input
-                                className="flex h-10 w-full rounded-md border px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm font-mono text-sm bg-white/80 dark:bg-slate-800/80 border-gray-200 dark:border-slate-700 shadow-sm"
-                                value={link}
-                            />
-                            <div className="flex gap-2 md:gap-3">
-                                <Dialog>
-                                    <DialogTrigger asChild>
+
+            {/* Link and Actions Section */}
+            <div className="mt-4 space-y-4">
+                <div>
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Your Tip Jar Link</label>
+                    <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <input
+                            className="w-full rounded-lg border border-blue-200/50 bg-white/80 px-4 py-2 text-sm font-mono text-gray-800 outline-none transition-all focus:border-blue-400 dark:border-slate-700 dark:bg-slate-800/80 dark:text-gray-200 dark:focus:border-blue-500"
+                            value={link}
+                            readOnly
+                            aria-label="Tip jar link"
+                        />
+                        <div className="flex gap-3">
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <motion.div
+                                        variants={{
+                                            rest: { scale: 1 },
+                                            hover: { scale: 1.05 },
+                                            tap: { scale: 0.95 },
+                                        }}
+                                        whileHover="hover"
+                                        whileTap="tap"
+                                    >
                                         <Button
-                                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border bg-background hover:text-accent-foreground h-10 px-4 py-2 border-blue-400 text-blue-500 dark:border-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 max-md:w-full max-md:flex-1"
+                                            className="flex items-center gap-2 rounded-lg border border-blue-400 bg-white px-4 py-2 text-sm font-medium text-blue-500 hover:bg-blue-50 dark:border-blue-500 dark:bg-slate-800 dark:text-blue-400 dark:hover:bg-blue-900/20"
                                             aria-label="Share QR code"
                                         >
-                                            <QR />
+                                            <QR className="h-4 w-4" />
                                             Share QR
                                         </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[425px] rounded-2xl bg-gradient-to-br from-green-50/90 to-blue-50/90 dark:from-slate-900/90 dark:to-slate-800/90 border border-emerald-200/50 dark:border-emerald-900/50 shadow-lg p-6">
+                                    </motion.div>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <motion.div
+                                        variants={{
+                                            hidden: { opacity: 0, scale: 0.95 },
+                                            visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
+                                            exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2, ease: "easeIn" } },
+                                        }}
+                                        initial="hidden"
+                                        animate="visible"
+                                        exit="exit"
+                                    >
                                         <DialogHeader>
-                                            <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Scan to Tip</DialogTitle>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                Scan this QR code to send a tip to {title}.
-                                            </p>
+                                            <DialogTitle className="text-xl font-bold text-gray-800 dark:text-gray-100">Scan to Tip</DialogTitle>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">Scan this QR code to send a tip to {title}.</p>
                                         </DialogHeader>
-                                        <div className="flex justify-center p-6 bg-white/80 dark:bg-slate-800/80 rounded-lg shadow-inner border border-gray-200 dark:border-slate-700">
-                                            <QRCodeCanvas
-                                                value={link}
-                                                size={200}
-                                                bgColor="#ffffff"
-                                                fgColor="#000000"
-                                                level="H"
-                                                includeMargin={true}
-                                                className="rounded-md"
-                                            />
+                                        <div className="my-6 flex justify-center rounded-lg bg-white/80 p-4 dark:bg-slate-800/80">
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                            >
+                                                <QRCodeCanvas
+                                                    value={link}
+                                                    size={180}
+                                                    bgColor="#ffffff"
+                                                    fgColor="#000000"
+                                                    level="H"
+                                                    includeMargin={true}
+                                                    className="rounded-md"
+                                                />
+                                            </motion.div>
                                         </div>
-                                        <div className="flex justify-center mt-4">
+                                        <div className="flex justify-center">
                                             <DialogClose asChild>
-                                                <Button
-                                                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:opacity-90 h-10 px-10 py-2"
-                                                    aria-label="Close dialog"
+                                                <motion.div
+                                                    variants={{
+                                                        rest: { scale: 1 },
+                                                        hover: { scale: 1.05 },
+                                                        tap: { scale: 0.95 },
+                                                    }}
+                                                    whileHover="hover"
+                                                    whileTap="tap"
                                                 >
-                                                    Close
-                                                </Button>
+                                                    <Button
+                                                        className="rounded-lg bg-blue-600 px-8 py-3 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                                                        aria-label="Close dialog"
+                                                    >
+                                                        Close
+                                                    </Button>
+                                                </motion.div>
                                             </DialogClose>
                                         </div>
-                                    </DialogContent>
-                                </Dialog>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
+                                    </motion.div>
+                                </DialogContent>
+                            </Dialog>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <motion.div
+                                            variants={{
+                                                rest: { scale: 1 },
+                                                hover: { scale: 1.05 },
+                                                tap: { scale: 0.95 },
+                                            }}
+                                            whileHover="hover"
+                                            whileTap="tap"
+                                            className="relative"
+                                        >
                                             <Button
                                                 onClick={handleCopy}
-                                                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white  max-md:w-full max-md:flex-1 hover:opacity-90 dark:hover:opacity-80 h-10 px-4 py-2"
+                                                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                                                 aria-label="Copy tip jar link"
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
-                                                    width="24"
-                                                    height="24"
+                                                    width="16"
+                                                    height="16"
                                                     viewBox="0 0 24 24"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     strokeWidth="2"
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
-                                                    className="lucide lucide-copy h-4 w-4 mr-2"
-                                                    aria-hidden="true"
+                                                    className="h-4 w-4"
                                                 >
-                                                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-                                                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                                                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                                                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
                                                 </svg>
-                                                {copyStatus === "copied" ? "Copied!" : copyStatus === "error" ? "Failed to copy" : "Copy Link"}
+                                                {copyStatus === "copied" ? "Copied!" : copyStatus === "error" ? "Failed" : "Copy Link"}
                                             </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                                            {copyStatus === "copied"
-                                                ? "Link copied to clipboard!"
-                                                : copyStatus === "error"
-                                                ? "Failed to copy link"
-                                                : "Copy the tip jar link"}
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </div>
+                                            <AnimatePresence>
+                                                {copyStatus !== "idle" && (
+                                                    <motion.div
+                                                        className="absolute -top-10 left-1/2 -translate-x-1/2 rounded-md bg-blue-600 px-2 py-1 text-xs text-white dark:bg-blue-500"
+                                                        variants={{
+                                                            idle: { opacity: 0, y: -10 },
+                                                            copied: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+                                                        }}
+                                                        initial="idle"
+                                                        animate="copied"
+                                                        exit="idle"
+                                                    >
+                                                        {copyStatus === "copied" ? "Link Copied!" : "Failed to Copy"}
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </motion.div>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-blue-600 text-white dark:bg-blue-500">
+                                        {copyStatus === "copied"
+                                            ? "Link copied to clipboard!"
+                                            : copyStatus === "error"
+                                            ? "Failed to copy link"
+                                            : "Copy the tip jar link"}
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }

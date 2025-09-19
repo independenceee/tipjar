@@ -8,9 +8,15 @@ import FormTip from "~/components/form-tip";
 import { useParams } from "next/navigation";
 import Status from "~/components/status";
 import Withdraw from "~/components/withdraw";
+import { getStatus } from "~/services/hydra.service";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Page() {
     const params = useParams();
+    const { data: dataStatus, isLoading: isLoadingStatus } = useQuery({
+        queryKey: ["status"],
+        queryFn: () => getStatus({ walletAddress: params?.address as string, isCreator: false }),
+    });
 
     return (
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
@@ -18,7 +24,11 @@ export default function Page() {
             <aside className="container mx-auto py-8 px-4 pt-24">
                 <div className="max-w-7xl mx-auto space-y-6 px-4 py-8">
                     <section className="w-full mb-6">
-                        <Status  isCreator={false} />
+                        <Status
+                            title="There is now a head available for you to access and below is the current state of your head"
+                            loading={isLoadingStatus}
+                            data={dataStatus as string}
+                        />
                     </section>
 
                     <section className="grid grid-cols-1 md:grid-cols-2 gap-6">

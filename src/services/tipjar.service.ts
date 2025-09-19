@@ -1,9 +1,12 @@
 "use server";
 
-import { stringToHex, UTxO } from "@meshsdk/core";
+import { MeshWallet, stringToHex, UTxO } from "@meshsdk/core";
+import { HydraProvider } from "@meshsdk/hydra";
 import cbor from "cbor";
-import { SPEND_ADDRESS } from "~/constants/enviroments";
+import { APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_WS_URL, SPEND_ADDRESS } from "~/constants/enviroments";
 import { blockfrostFetcher, blockfrostProvider } from "~/providers/cardano";
+import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
+import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 import { Transaction } from "~/types";
 import { parseError } from "~/utils/error/parse-error";
 
@@ -135,6 +138,79 @@ export async function getProposal({ walletAddress }: { walletAddress: string }) 
             data: null,
             message: "No matching proposal found",
         };
+    } catch (error) {
+        return {
+            data: null,
+            message: `Error fetching proposal data: ${error instanceof Error ? error.message : "Unknown error"}`,
+        };
+    }
+}
+
+/**
+ * Creates a new proposal by submitting a transaction with metadata.
+ *
+ * Workflow:
+ * 1. Validate the wallet address input.
+ * 2. Initialize a Mesh wallet (using mnemonic from env).
+ * 3. Build an unsigned transaction with provided metadata.
+ * 4. Sign and submit the transaction.
+ * 5. Wait for confirmation.
+ * 6. Return the transaction hash if successful.
+ *
+ * @param {Object} params
+ * @param {string} params.walletAddress - The wallet address of the proposal creator.
+ * @param {string} params.assetName - The asset name associated with the proposal.
+ * @param {Record<string, string | number>} params.metadata - Additional metadata to store in the transaction.
+ *
+ * @returns {Promise<{
+ *   data: { txHash: string } | null;
+ *   message: string;
+ * }>}
+ */
+export async function createProposal({
+    walletAddress,
+    assetName,
+    metadata,
+}: {
+    walletAddress: string;
+    assetName: string;
+    metadata: Record<string, string | number>;
+}) {
+    try {
+        if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
+            return {
+                data: null,
+                message: "Invalid wallet address provided",
+            };
+        }
+
+        const meshWallet = new MeshWallet({
+            networkId: APP_NETWORK_ID,
+            fetcher: blockfrostProvider,
+            submitter: blockfrostProvider,
+            key: {
+                type: "mnemonic",
+                words: process.env.APP_MNEMONIC?.split(" ") || [],
+            },
+        });
+
+        const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({ meshWallet: meshWallet });
+        const unsignedTx = await meshTxBuilder.signup({
+            assetName: assetName,
+            metadata: {
+                walletAddress: walletAddress,
+                datetime: Date.now().toString(),
+                ...metadata,
+            },
+        });
+
+        const signedTx = await meshWallet.signTx(unsignedTx, true);
+        const txHash = await meshWallet.submitTx(signedTx);
+        await new Promise<void>(function (resolve, reject) {
+            blockfrostProvider.onTxConfirmed(txHash, () => {
+                resolve();
+            });
+        });
     } catch (error) {
         return {
             data: null,

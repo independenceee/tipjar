@@ -9,11 +9,27 @@ export const CreatorSchema = z
         startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be in YYYY-MM-DD format"),
         endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be in YYYY-MM-DD format"),
         participants: z.number().min(2, "At least 2 participant is required").max(1000, "Participants cannot exceed 1000"),
+        adaCommit: z
+            .object({
+                txHash: z.string().min(1, "Transaction hash is required"),
+                outputIndex: z.number().min(0, "Output index must be non-negative"),
+                amount: z.number().min(10000000, "Must commit at least 10 ADA"),
+            })
+            .required({ txHash: true, outputIndex: true, amount: true }),
     })
     .refine((data) => new Date(data.endDate) >= new Date(data.startDate), {
         message: "End date must be after start date",
         path: ["endDate"],
     });
-export const TipperSchema = z.object({
-    value: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
+
+export const CommitSchema = z
+    .object({
+        txHash: z.string().min(1, "Transaction hash is required"),
+        outputIndex: z.number().min(0, "Output index must be non-negative"),
+        amount: z.number().min(10000000, "Must commit at least 10 ADA"),
+    })
+    .required({ txHash: true, outputIndex: true, amount: true });
+
+export const TipSchema = z.object({
+    amount: z.number().min(2000000, "Must commit at least 2 ADA"),
 });

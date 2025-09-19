@@ -3,11 +3,12 @@
 import { MeshWallet, UTxO } from "@meshsdk/core";
 import { HydraProvider } from "@meshsdk/hydra";
 import { isNil } from "lodash";
-import { DECIMAL_PLACE } from "~/constants/common";
+import { DECIMAL_PLACE, HeadStatus } from "~/constants/common";
 import cbor from "cbor";
 import { APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
+
 import { parseError } from "~/utils/error/parse-error";
 import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 
@@ -67,18 +68,31 @@ export const withdraw = async function ({
 };
 
 /**
- * @description Register to become a creator or supporter.
- * @param param { walletAddress: , isCreator: }
- * @returns
+ * Commit UTXOs from a wallet into a Hydra Head session.
+ *
+ * This function connects to a Hydra node (creator or subscriber),
+ * optionally initializes the Hydra Head if `isInit` is true,
+ * and commits UTXOs associated with the provided wallet address.
+ *
+ * @param {string} walletAddress - The wallet address that will commit UTXOs.
+ * @param {boolean} isCreator - Whether the wallet is the creator of the Hydra Head.
+ * @param {boolean} isInit - Whether to initialize the Hydra Head (only valid if isCreator is true).
+ *
+ * @returns {Promise<{success: boolean; unsignedTx: unknown; message: string}>}
+ *          An object containing success flag, unsigned transaction, and message.
+ *
+ * @throws {Error} If the wallet address is missing or Hydra/Mesh operations fail.
  */
 export const commit = async function ({
     walletAddress,
+    input,
     isCreator = false,
-    isInit = false,
+    status,
 }: {
     walletAddress: string;
+    input?: { txHash: string; outputIndex: number };
     isCreator: boolean;
-    isInit: boolean;
+    status?: string;
 }) {
     try {
         if (isNil(walletAddress)) {
@@ -102,14 +116,15 @@ export const commit = async function ({
 
         const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({ meshWallet: meshWallet, hydraProvider: hydraProvider });
         await hydraTxBuilder.connect();
-        if (isInit) {
-            console.log("Init", isInit);
+
+        console.log(status === HeadStatus.IDLE);
+        if (status === HeadStatus.IDLE) {
             await hydraTxBuilder.init();
         }
-        const unsignedTx = await hydraTxBuilder.commit();
-        return unsignedTx;
+
+        return await hydraTxBuilder.commit({ input: input });
     } catch (error) {
-        return error;
+        throw Error(String(error));
     }
 };
 
@@ -206,11 +221,11 @@ export const getRecents = async function ({ walletAddress, page = 1, limit = 12 
             wsUrl: HYDRA_WS_URL || HYDRA_WS_URL_SUB,
         });
 
-        const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+        const utxos = (await hydraProvider.fetchAddressUTxOs(walletAddress)).filter(
+            (utxo) => utxo.output.plutusData && !isNil(utxo.output.plutusData) && utxo.output.plutusData !== "",
+        );
         const total = utxos.length;
-        const utxosSlice: Array<UTxO> = utxos
-            .filter((utxo) => utxo.output.plutusData && !isNil(utxo.output.plutusData) && utxo.output.plutusData !== "")
-            .slice((page - 1) * limit, page * limit);
+        const utxosSlice: Array<UTxO> = utxos.slice((page - 1) * limit, page * limit);
 
         const data = await Promise.all(
             utxosSlice.map(async function (utxo) {
@@ -256,10 +271,7 @@ export const getRecents = async function ({ walletAddress, page = 1, limit = 12 
 export const getStatus = async function ({ walletAddress, isCreator }: { walletAddress: string; isCreator: boolean }) {
     try {
         if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
-            return {
-                data: null,
-                message: "Invalid wallet address provided",
-            };
+            return "Invalid wallet address provided";
         }
 
         const hydraProvider = new HydraProvider({
@@ -267,20 +279,14 @@ export const getStatus = async function ({ walletAddress, isCreator }: { walletA
             wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
         });
 
-        const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
-
         await hydraProvider.connect();
         const status = await hydraProvider.get("head");
 
-        return {
-            status: status.tag as string,
-            committed: utxos.length > 0,
-        };
+        console.log(status.tag);
+
+        return status.tag as string;
     } catch (error) {
-        return {
-            status: "Idle",
-            committed: false,
-        };
+        return "Idle";
     }
 };
 
@@ -336,6 +342,36 @@ export const getBalanceOther = async function ({ walletAddress }: { walletAddres
 
                 return parsed.walletAddress === walletAddress;
             }
+        });
+
+        const balance = utxosSlice.reduce((total: number, utxo: UTxO) => {
+            const amounts = Array.isArray(utxo?.output?.amount) ? utxo.output.amount : [];
+            const lovelaceAsset = amounts.find((asset) => asset.unit === "lovelace");
+            const amount = Number(lovelaceAsset?.quantity || 0);
+            return total + amount;
+        }, 0);
+
+        return balance;
+    } catch (_) {
+        return 0;
+    }
+};
+
+export const getBalanceCommit = async function ({ walletAddress }: { walletAddress: string }) {
+    try {
+        if (!walletAddress || walletAddress.trim() === "") {
+            return 0;
+        }
+
+        const hydraProvider = new HydraProvider({
+            httpUrl: HYDRA_HTTP_URL || HYDRA_HTTP_URL_SUB,
+            wsUrl: HYDRA_WS_URL || HYDRA_WS_URL_SUB,
+        });
+        await hydraProvider.connect();
+        const utxos = await hydraProvider.fetchAddressUTxOs(walletAddress);
+
+        const utxosSlice: Array<UTxO> = utxos.filter(async function (utxo) {
+            return utxo.output.plutusData === "";
         });
 
         const balance = utxosSlice.reduce((total: number, utxo: UTxO) => {

@@ -48,15 +48,18 @@ export class HydraAdapter {
      * @throws - Error if no qualifying UTxO is found
      */
     public getUTxOOnlyLovelace = (utxos: UTxO[], quantity = DECIMAL_PLACE) => {
-        return utxos.filter((utxo) => {
-            const amount = utxo.output.amount;
-            return (
-                Array.isArray(amount) &&
-                amount.length === 1 &&
-                amount[0].unit === "lovelace" &&
-                typeof amount[0].quantity === "string" &&
-                Number(amount[0].quantity) >= quantity
-            );
+        const filteredUTxOs = utxos.filter((utxo) => {
+            const amount = utxo.output?.amount;
+            if (!Array.isArray(amount) || amount.length !== 1) return false;
+            const { unit, quantity: qty } = amount[0];
+            const quantityNum = Number(qty);
+            return unit === "lovelace" && typeof qty === "string" && !isNaN(quantityNum) && quantityNum >= quantity;
+        });
+
+        return filteredUTxOs.sort((a, b) => {
+            const qtyA = Number(a.output.amount[0].quantity);
+            const qtyB = Number(b.output.amount[0].quantity);
+            return qtyA - qtyB;
         })[0];
     };
     /**
@@ -152,9 +155,6 @@ export class HydraAdapter {
         });
     };
 
-    /**
-     * @description
-     */
     public abort = async () => {
         await this.hydraProvider.connect();
         await new Promise<void>((resolve, reject) => {
@@ -176,10 +176,14 @@ export class HydraAdapter {
      * @description Commit UTXOs into the Hydra head to make them available for off-chain transactions.
      * @returns unsignedTx
      */
-    public commit = async (): Promise<string> => {
+    public commit = async ({ input }: { input?: { txHash: string; outputIndex: number } }): Promise<string> => {
         await this.hydraProvider.connect();
         const utxos = await this.meshWallet.getUtxos();
         const utxoOnlyLovelace = this.getUTxOOnlyLovelace(utxos, 10_000_000);
+        if (input) {
+            return await this.hydraInstance.commitFunds(input.txHash, input.outputIndex);
+        }
+
         return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
     };
 
