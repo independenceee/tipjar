@@ -19,7 +19,7 @@ export default function NotFound() {
                 <img className="animate-bounce-slow drop-shadow-2xl" width={150} src="/images/common/logo.png" alt="Cardano2VN Logo" />
                 <h1 className="text-5xl font-bold text-blue-600 dark:text-blue-300 tracking-tight drop-shadow-md">404 - Page Not Found</h1>
                 <p className="text-lg text-gray-500 dark:text-gray-300 max-w-md">
-                    Oops! The page you are looking for seems to have wandered off. Let's get you back on track!
+                    Oops! The page you are looking for seems to have wandered off. Lets get you back on track!
                 </p>
 
                 <Link
