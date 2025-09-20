@@ -4,9 +4,16 @@ import { APP_NETWORK } from "~/constants/enviroments";
 
 export class MeshTxBuilder extends MeshAdapter {
     /**
+     * @description Mint (signup) a new asset or update its metadata on-chain.
+     * If the asset does not exist, it will be minted. If it exists, its datum will be updated.
      *
-     * @param param { assetName: string, metadata: Record<string, string>}
-     * @returns unsignedTx
+     * @param {Object} param
+     * @param {string} param.assetName - The name of the asset to mint or update.
+     * @param {Record<string, string | number>} param.metadata - Metadata to be attached to the asset.
+     *
+     * @returns {Promise<string>} An unsigned transaction in CBOR hex format.
+     *
+     * @throws {Error} - Throws if wallet UTxOs or collateral cannot be retrieved.
      */
     signup = async ({ assetName, metadata }: { assetName: string; metadata: Record<string, string | number> }): Promise<string> => {
         const { utxos, collateral, walletAddress } = await this.getWalletForTx();
@@ -50,9 +57,15 @@ export class MeshTxBuilder extends MeshAdapter {
     };
 
     /**
+     * @description Burn (signout) an existing asset.
+     * If the asset UTxO is not found, an error is thrown.
      *
-     * @param param { assetName: string }
-     * @returns unsignedTx
+     * @param {Object} param
+     * @param {string} param.assetName - The name of the asset to burn.
+     *
+     * @returns {Promise<string>} An unsigned transaction in CBOR hex format.
+     *
+     * @throws {Error} - Throws if the asset UTxO is not found.
      */
     signout = async ({ assetName }: { assetName: string }): Promise<string> => {
         const { utxos, collateral, walletAddress } = await this.getWalletForTx();
@@ -83,7 +96,12 @@ export class MeshTxBuilder extends MeshAdapter {
     };
 
     /**
-     * @returns unsignedTx
+     * @description Remove all UTxOs stored at the script address and send their value back to the wallet.
+     * Commonly used for cleanup or contract state reset.
+     *
+     * @returns {Promise<string>} An unsigned transaction in CBOR hex format.
+     *
+     * @throws {Error} - Throws if UTxOs cannot be fetched or collateral is invalid.
      */
     remove = async (): Promise<string> => {
         const { utxos, collateral, walletAddress } = await this.getWalletForTx();

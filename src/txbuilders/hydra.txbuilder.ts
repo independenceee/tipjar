@@ -5,11 +5,16 @@ import { APP_NETWORK } from "~/constants/enviroments";
 
 export class HydraTxBuilder extends HydraAdapter {
     /**
-     * @description Lovelace transfer from one address to another.
+     * @description Create a transaction that transfers lovelace from the current wallet
+     * to a specific address on the Hydra network.
      *
-     * @param walletAddress
-     * @param quantity
-     * @returns unsignedTx
+     * @param {Object} params
+     * @param {string} params.tipAddress - The recipient address where lovelace will be sent.
+     * @param {number} [params.amount=DECIMAL_PLACE] - The amount of lovelace to send (default is DECIMAL_PLACE).
+     *
+     * @returns {Promise<any>} - An unsigned transaction ready to be signed and submitted.
+     *
+     * @throws {Error} - Throws if UTxOs are insufficient or wallet address cannot be retrieved.
      */
     send = async ({ tipAddress, amount = DECIMAL_PLACE }: { tipAddress: string; amount: number }) => {
         await this.hydraProvider.connect();
@@ -41,8 +46,12 @@ export class HydraTxBuilder extends HydraAdapter {
     };
 
     /**
-     * @description Merge UTxOs into one to be able to decommit
-     * @returns unsignedTx
+     * @description Merge all available UTxOs of the wallet into a single UTxO.
+     * This is useful in scenarios where transaction decommitment requires fewer inputs.
+     *
+     * @returns {Promise<any>} - An unsigned transaction that consolidates all UTxOs.
+     *
+     * @throws {Error} - Throws if no UTxOs are found or if transaction build fails.
      */
     public merge = async () => {
         await this.hydraProvider.connect();
