@@ -11,6 +11,8 @@ import { useWallet } from "~/hooks/use-wallet";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { routers } from "~/constants/routers";
+import Image from "next/image";
+import { images } from "~/public/images*";
 
 export default function TipperPage() {
     const [page, setPage] = useState(1);
@@ -43,20 +45,7 @@ export default function TipperPage() {
                                 animate={{ rotate: [0, 10, -10, 0] }}
                                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-12 w-12 text-blue-500 dark:text-blue-300"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M3 12l2-2m0 0l7-7 7 7m-9 2v6a2 2 0 002 2h4a2 2 0 002-2v-6m-7-2v6"
-                                    />
-                                </svg>
+                                <Image src={images.logo} alt="" />
                             </motion.div>
                             <motion.h3
                                 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2"
@@ -122,20 +111,7 @@ export default function TipperPage() {
                                 animate={{ rotate: [0, 10, -10, 0] }}
                                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-12 w-12 text-blue-500 dark:text-blue-300"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M3 12l2-2m0 0l7-7 7 7m-9 2v6a2 2 0 002 2h4a2 2 0 002-2v-6m-7-2v6"
-                                    />
-                                </svg>
+                                <Image src={images.logo} alt="" />
                             </motion.div>
                             <motion.h3
                                 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2"
@@ -162,7 +138,7 @@ export default function TipperPage() {
                             >
                                 <Link
                                     href={routers.dashboard}
-                                    className="inline-flex items-center justify-center whitespace-nowrap rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-blue-600 dark:bg-white px-8 py-4 text-lg font-semibold text-white dark:text-blue-900 shadow-xl hover:bg-blue-700 dark:hover:bg-gray-100"
+                                    className="inline-flex items-center justify-center whitespace-nowrap rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-blue-600 dark:bg-white px-8 py-2 text-lg font-semibold text-white dark:text-blue-900 shadow-xl hover:bg-blue-700 dark:hover:bg-gray-100"
                                 >
                                     Create Tipjar
                                 </Link>
