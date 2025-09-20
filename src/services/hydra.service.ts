@@ -8,9 +8,20 @@ import cbor from "cbor";
 import { APP_MNEMONIC, APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/providers/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
-
 import { parseError } from "~/utils/error/parse-error";
 
+/**
+ * @description Withdraw ADA/UTXOs from a Hydra Head.
+ * Depending on the current Head status, it will:
+ * - Close the Head if OPEN.
+ * - Fanout and finalize transactions.
+ *
+ * @param {Object} params
+ * @param {string} params.status - Current Hydra Head status.
+ * @param {boolean} params.isCreator - Whether the caller is the Head creator.
+ *
+ * @returns {Promise<void>}
+ */
 export const withdraw = async function ({ status, isCreator = false }: { status: string; isCreator: boolean }) {
     try {
         const meshWallet = new MeshWallet({
@@ -56,20 +67,15 @@ export const withdraw = async function ({ status, isCreator = false }: { status:
 };
 
 /**
- * Commit UTXOs from a wallet into a Hydra Head session.
+ * @description Commit UTXOs into a Hydra Head.
  *
- * This function connects to a Hydra node (creator or subscriber),
- * optionally initializes the Hydra Head if `isInit` is true,
- * and commits UTXOs associated with the provided wallet address.
- *
- * @param {string} walletAddress - The wallet address that will commit UTXOs.
- * @param {boolean} isCreator - Whether the wallet is the creator of the Hydra Head.
- * @param {boolean} isInit - Whether to initialize the Hydra Head (only valid if isCreator is true).
+ * @param {Object} params
+ * @param {string} params.walletAddress - Wallet address committing UTXOs.
+ * @param {Object} [params.input] - Optional UTXO input { txHash, outputIndex }.
+ * @param {boolean} params.isCreator - Whether this wallet is Head creator.
+ * @param {string} [params.status] - Current Hydra Head status.
  *
  * @returns {Promise<{success: boolean; unsignedTx: unknown; message: string}>}
- *          An object containing success flag, unsigned transaction, and message.
- *
- * @throws {Error} If the wallet address is missing or Hydra/Mesh operations fail.
  */
 export const commit = async function ({
     walletAddress,
@@ -123,9 +129,15 @@ export const commit = async function ({
 };
 
 /**
- * @description Tip to a creator.
- * @param param0 { walletAddress, tipAddress, amount, isCreator }
- * @returns unsignedTx
+ * @description Send a tip transaction to a creator inside Hydra Head.
+ *
+ * @param {Object} params
+ * @param {string} params.walletAddress - Sender wallet address.
+ * @param {string} params.tipAddress - Recipient address (creator).
+ * @param {number} params.amount - Amount of lovelace (in ADA units).
+ * @param {boolean} params.isCreator - Whether the sender is Head creator.
+ *
+ * @returns {Promise<unknown>} unsignedTx
  */
 export const send = async function ({
     walletAddress,
@@ -168,9 +180,13 @@ export const send = async function ({
 };
 
 /**
+ * @description Submit a signed transaction to Hydra Head.
  *
- * @param param0 { signedTx, isCreator }
- * @returns
+ * @param {Object} params
+ * @param {string} params.signedTx - Signed transaction (Cbor hex).
+ * @param {boolean} params.isCreator - Whether the caller is Head creator.
+ *
+ * @returns {Promise<{data: string | null; result: boolean; message: string}>}
  */
 export const submitHydraTx = async function ({
     signedTx,
@@ -201,6 +217,16 @@ export const submitHydraTx = async function ({
     }
 };
 
+/**
+ * @description Fetch recent tip UTXOs for a wallet.
+ *
+ * @param {Object} params
+ * @param {string} params.walletAddress - Wallet address to query.
+ * @param {number} [params.page=1] - Page index for pagination.
+ * @param {number} [params.limit=12] - Number of items per page.
+ *
+ * @returns {Promise<{data: any[] | null; totalItem: number; totalPages: number; currentPage: number; message?: string}>}
+ */
 export const getRecents = async function ({ walletAddress, page = 1, limit = 12 }: { walletAddress: string; page?: number; limit?: number }) {
     try {
         if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
@@ -262,6 +288,15 @@ export const getRecents = async function ({ walletAddress, page = 1, limit = 12 
     }
 };
 
+/**
+ * @description Get the current Hydra Head status for a wallet.
+ *
+ * @param {Object} params
+ * @param {string} params.walletAddress - Wallet address.
+ * @param {boolean} params.isCreator - Whether the caller is Head creator.
+ *
+ * @returns {Promise<string>} Head status (OPEN, CLOSED, IDLE, etc.)
+ */
 export const getStatus = async function ({ walletAddress, isCreator }: { walletAddress: string; isCreator: boolean }) {
     try {
         if (!walletAddress || typeof walletAddress !== "string" || walletAddress.trim() === "") {
@@ -282,6 +317,14 @@ export const getStatus = async function ({ walletAddress, isCreator }: { walletA
     }
 };
 
+/**
+ * @description Get the total balance (lovelace) from tip UTXOs.
+ *
+ * @param {Object} params
+ * @param {string} params.walletAddress - Wallet address.
+ *
+ * @returns {Promise<number>} Total lovelace balance from tips.
+ */
 export const getBalanceTip = async function ({ walletAddress }: { walletAddress: string }) {
     try {
         if (!walletAddress || walletAddress.trim() === "") {
@@ -312,6 +355,14 @@ export const getBalanceTip = async function ({ walletAddress }: { walletAddress:
     }
 };
 
+/**
+ * @description Get the total balance (lovelace) from committed UTXOs.
+ *
+ * @param {Object} params
+ * @param {string} params.walletAddress - Wallet address.
+ *
+ * @returns {Promise<number>} Total lovelace balance from committed UTXOs.
+ */
 export const getBalanceCommit = async function ({ walletAddress }: { walletAddress: string }) {
     try {
         if (!walletAddress || walletAddress.trim() === "") {

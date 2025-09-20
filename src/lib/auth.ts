@@ -10,6 +10,13 @@ interface Credentials {
     address: string;
 }
 
+/**
+ * NextAuth configuration object
+ *
+ * - Uses `CredentialsProvider` for custom wallet-based authentication.
+ * - Parses `credentials.data` JSON string into `{ wallet, address }`.
+ * - Stores user info in JWT and session objects.
+ */
 export const config: NextAuthOptions = {
     providers: [
         CredentialProvider({
@@ -46,18 +53,36 @@ export const config: NextAuthOptions = {
     ],
 
     callbacks: {
+        /**
+         * Called on sign-in attempt.
+         * Always returns `true` to allow login.
+         */
         async signIn() {
             return true;
         },
+
+        /**
+         * Redirect users after sign-in.
+         */
         async redirect() {
             return "/dashboard";
         },
+
+        /**
+         * Custom JWT callback.
+         * Attaches the `user` object to the token on first login.
+         */
         async jwt({ user, token }: { user?: User; token: any }) {
             if (user) {
                 token.user = user;
             }
             return token;
         },
+
+        /**
+         * Custom session callback.
+         * Ensures `session.user` is always populated from token.
+         */
         async session({ session, token }: { session: any; token: any }) {
             session.user = token.user;
             return session;
@@ -65,10 +90,23 @@ export const config: NextAuthOptions = {
     },
 } satisfies NextAuthOptions;
 
+/**
+ * Helper function to get server-side session.
+ * Works in both `getServerSideProps` and API routes.
+ */
 export function auth(...args: [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]] | [NextApiRequest, NextApiResponse] | []) {
     return getServerSession(...args, config);
 }
+
+/**
+ * API route handlers for Next.js App Router (`GET` and `POST`).
+ * These will expose NextAuth under `/api/auth/[...nextauth]`.
+ */
 export const GET = NextAuth(config);
 export const POST = NextAuth(config);
 
+/**
+ * Exposes the `signIn` helper from NextAuth,
+ * which can be used in client components.
+ */
 export const { signIn } = NextAuth(config);

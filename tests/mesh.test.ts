@@ -1,7 +1,5 @@
 import { MeshWallet } from "@meshsdk/core";
 import { blockfrostProvider } from "~/providers/cardano";
-import { getBalance, getRecents, getStatus } from "~/services/hydra.service";
-import { getWithdraws } from "~/services/tipjar.service";
 import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 
 describe("Save data and read data to participate in the cardano hydra process", function () {
@@ -83,14 +81,5 @@ describe("Save data and read data to participate in the cardano hydra process", 
                 resolve();
             });
         });
-    });
-
-    test("Status", async function () {
-        const status = await getStatus({
-            isCreator: true,
-            walletAddress: "addr_test1qz45qtdupp8g30lzzr684m8mc278s284cjvawna5ypwkvq7s8xszw9mgmwpxdyakl7dgpfmzywctzlsaghnqrl494wnqhgsy3g",
-        });
-
-        console.log(status);
     });
 });

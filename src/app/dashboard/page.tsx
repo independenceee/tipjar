@@ -218,7 +218,7 @@ export default function Dashboard() {
         );
     }
 
-    if ((!proposalData?.data && statusData === HeadStatus.IDLE) || (!proposalData?.data && statusData === HeadStatus.INITIALIZING)) {
+    if (!proposalData?.data) {
         return (
             <motion.aside
                 className="container mx-auto py-8 px-4 pt-24"
