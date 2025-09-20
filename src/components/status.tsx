@@ -1,7 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Warn } from "./icons";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { ClipLoader } from "react-spinners";
 import { Button } from "./ui/button";
 import {
@@ -15,111 +18,121 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { HeadStatus } from "~/constants/common";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { Warn } from "./icons";
 import { withdraw } from "~/services/hydra.service";
 import { deleteCreator } from "~/services/tipjar.service";
-import { useQueryClient } from "@tanstack/react-query";
-import { redirect } from "next/navigation";
+import { HeadStatus } from "~/constants/common";
 import { routers } from "~/constants/routers";
 
-const Status = function ({ title, data, loading }: { title: string; data: string; loading: boolean }) {
+interface StatusProps {
+    title: string;
+    data: string;
+    loading: boolean;
+}
+
+const Status: React.FC<StatusProps> = ({ title, data, loading }) => {
     const queryClient = useQueryClient();
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const handleFanout = async function () {
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const isFanoutEligible = useMemo(() => [HeadStatus.OPEN, HeadStatus.CLOSED, HeadStatus.FANOUT_POSSIBLE].includes(data as HeadStatus), [data]);
+
+    const handleFanout = useCallback(async () => {
         try {
             setIsLoading(true);
             await withdraw({ status: data, isCreator: true });
             await deleteCreator();
             queryClient.invalidateQueries({ queryKey: ["status"] });
-            toast.success("Fanout to layer 1 successfully !");
-            redirect(routers.dashboard);
+            toast.success("Fanout to layer 1 successful!");
+            router.push(routers.dashboard);
         } catch (error) {
-            toast.error(String(error));
+            toast.error(error instanceof Error ? error.message : "Failed to fanout");
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [data, queryClient, router]);
 
-    useEffect(
-        function () {
-            if (data === HeadStatus.CLOSED) {
-                handleFanout();
-            }
-        },
-        [data],
-    );
+    useEffect(() => {
+        if (data === HeadStatus.CLOSED) {
+            handleFanout();
+        }
+    }, [data, handleFanout]);
 
     return (
         <motion.div
-            className="relative w-full flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-white dark:from-blue-900/30 dark:to-gray-900 border-l-4 border-blue-400 dark:border-blue-600 shadow-md"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="relative flex w-full items-center gap-4 rounded-lg border-l-4 border-blue-400 bg-gradient-to-r from-blue-50 to-white p-4 shadow-md dark:border-blue-600 dark:from-blue-900/30 dark:to-gray-900"
+            variants={{
+                hidden: { opacity: 0, scale: 0.95 },
+                visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+            }}
+            initial="hidden"
+            animate="visible"
         >
             <motion.div
+                className="flex-shrink-0 text-blue-500 dark:text-blue-400"
                 initial={{ rotate: -45, opacity: 0 }}
                 animate={{ rotate: 0, opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="text-blue-500 dark:text-blue-400 flex-shrink-0"
             >
-                <Warn className="w-5 h-5" />
+                <Warn className="h-5 w-5" />
             </motion.div>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
                 <motion.p
-                    className="text-sm font-medium text-blue-700 dark:text-blue-200 truncate"
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 0.3, delay: 0.2 }}
+                    className="truncate text-sm font-medium text-blue-700 dark:text-blue-200"
+                    variants={{
+                        hidden: { opacity: 0, x: -20 },
+                        visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+                    }}
+                    transition={{ delay: 0.2 }}
                 >
                     {title}
                 </motion.p>
                 <motion.div
-                    className="text-xs font-bold uppercase text-blue-600 dark:text-blue-300 flex items-center gap-2"
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 0.3, delay: 0.3 }}
+                    className="flex items-center gap-2 text-xs font-bold uppercase text-blue-600 dark:text-blue-300"
+                    variants={{
+                        hidden: { opacity: 0, x: -20 },
+                        visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+                    }}
+                    transition={{ delay: 0.3 }}
                 >
                     Status:{" "}
                     {loading ? (
-                        <ClipLoader color="#3b82f6" loading={true} size={14} />
+                        <ClipLoader color="#3b82f6" size={14} />
                     ) : (
-                        <span className="bg-blue-100 dark:bg-blue-800/50 px-2 py-1 rounded-md">{data as string}</span>
+                        <span className="rounded-md bg-blue-100 px-2 py-1 dark:bg-blue-800/50">{data}</span>
                     )}
                 </motion.div>
             </div>
-            {(data?.toString().toUpperCase() === HeadStatus.OPEN ||
-                data?.toString().toUpperCase() === HeadStatus.CLOSED ||
-                data?.toString().toUpperCase() === HeadStatus.FANOUT_POSSIBLE) && (
+            {isFanoutEligible && (
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.9 }}
+                    variants={{
+                        hidden: { opacity: 0, x: -20 },
+                        visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+                    }}
+                    transition={{ delay: 0.4 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Button
-                                type="button"
                                 disabled={isLoading}
-                                className="w-full rounded-md bg-blue-500 dark:bg-blue-600 py-3 px-8 text-base font-semibold text-white dark:text-white shadow-lg hover:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                className="w-full rounded-md bg-blue-500 py-3 px-8 text-base font-semibold text-white shadow-lg hover:bg-blue-600 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
                             >
-                                {isLoading ? "Fanouting ..." : "Fanout"}
+                                {isLoading ? "Fanouting..." : "Fanout"}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Fanout to bring Layer 1</AlertDialogTitle>
+                                <AlertDialogTitle>Fanout to Layer 1</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    You will fanout the current head then the services on layer 2 will be brought to layer 1
+                                    This will fanout the current head, transferring services from layer 2 to layer 1.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction onClick={handleFanout} disabled={isLoading}>
-                                    {isLoading ? "Fanouting ..." : "Fanout"}
+                                    {isLoading ? "Fanouting..." : "Fanout"}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>

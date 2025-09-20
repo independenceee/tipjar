@@ -1,12 +1,12 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Image from "next/image";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DECIMAL_PLACE } from "~/constants/common";
-import { images } from "~/public/images*";
-import { getBalanceTip, getBalanceCommit, withdraw } from "~/services/hydra.service";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { isNil } from "lodash";
+import CountUp from "react-countup";
 import { Button } from "./ui/button";
 import {
     AlertDialog,
@@ -19,38 +19,44 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { useWallet } from "~/hooks/use-wallet";
-import { isNil } from "lodash";
-import { redirect } from "next/navigation";
-import { routers } from "~/constants/routers";
-import { submitTx } from "~/services/mesh.service";
-import CountUp from "react-countup";
-import { DrawerContent, DrawerTrigger, Drawer } from "./ui/drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "./ui/drawer";
 import Tipper from "./tipper";
+import { useWallet } from "~/hooks/use-wallet";
+import { images } from "~/public/images";
+import { routers } from "~/constants/routers";
+import { DECIMAL_PLACE } from "~/constants/common";
+import { getBalanceTip, getBalanceCommit, withdraw } from "~/services/hydra.service";
 import { deleteCreator } from "~/services/tipjar.service";
+import { toast } from "sonner";
 
-const Balance = function ({
-    walletAddress,
-    assetName,
-    proposal,
-    status,
-}: {
+interface Proposal {
+    image?: string;
+    title?: string;
+    author?: string;
+    walletAddress?: string;
+    datetime?: string | number;
+}
+
+interface BalanceProps {
     walletAddress: string;
     assetName: string;
     status: string;
-    proposal: Record<string, string | number>;
-}) {
-    const { wallet, signTx } = useWallet();
-    const [loading, setLoading] = useState<boolean>(false);
-    const queryClient = useQueryClient();
+    proposal: Proposal;
+}
 
-    const { data: balanceTip, isLoading } = useQuery({
+const Balance: React.FC<BalanceProps> = ({ walletAddress, assetName, status, proposal }) => {
+    const { wallet, signTx } = useWallet();
+    const queryClient = useQueryClient();
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+
+    const { data: balanceTip, isLoading: isLoadingTip } = useQuery({
         queryKey: ["balance", walletAddress],
         queryFn: () => getBalanceTip({ walletAddress }),
         enabled: !!walletAddress,
     });
 
-    const { data: balanceCommit, isLoading: isLoadingBalanceOther } = useQuery({
+    const { data: balanceCommit, isLoading: isLoadingCommit } = useQuery({
         queryKey: ["balance-other", walletAddress],
         queryFn: () => getBalanceCommit({ walletAddress }),
         enabled: !!walletAddress,
@@ -59,16 +65,21 @@ const Balance = function ({
     const handleWithdraw = useCallback(async () => {
         try {
             setLoading(true);
-            await withdraw({ status: status, isCreator: true });
+            await withdraw({ status, isCreator: true });
             await deleteCreator();
             queryClient.invalidateQueries({ queryKey: ["status"] });
-            redirect(routers.dashboard);
+            toast.success("Withdrawal successful!");
+            router.push(routers.dashboard);
         } catch (error) {
-            console.error("Withdraw failed:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to withdraw");
         } finally {
             setLoading(false);
         }
-    }, [walletAddress, assetName, signTx, queryClient]);
+    }, [status, queryClient, router]);
+
+    const adaConversionRate = 0.92; // Memoized conversion rate for USD
+    const balanceTipADA = useMemo(() => (balanceTip ? balanceTip / DECIMAL_PLACE : 0), [balanceTip]);
+    const balanceCommitADA = useMemo(() => (balanceCommit ? balanceCommit / DECIMAL_PLACE : 0), [balanceCommit]);
 
     return (
         <motion.div
@@ -102,8 +113,8 @@ const Balance = function ({
                                 className="h-6 w-6 text-blue-600 dark:text-blue-400"
                                 aria-hidden="true"
                             >
-                                <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path>
-                                <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path>
+                                <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+                                <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
                             </svg>
                         </motion.div>
                         <div>
@@ -118,17 +129,10 @@ const Balance = function ({
                                 initial="initial"
                                 animate="animate"
                             >
-                                {isLoading || loading ? (
+                                {isLoadingTip || loading ? (
                                     "0.00"
                                 ) : (
-                                    <CountUp
-                                        start={0}
-                                        end={(balanceTip as number) / DECIMAL_PLACE || 0}
-                                        duration={2.75}
-                                        separator=" "
-                                        decimals={4}
-                                        decimal=","
-                                    />
+                                    <CountUp start={0} end={balanceTipADA} duration={2.75} decimals={4} decimal="," separator=" " />
                                 )}{" "}
                                 ADA
                             </motion.p>
@@ -136,21 +140,13 @@ const Balance = function ({
                     </div>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <motion.div
-                                variants={{
-                                    rest: { scale: 1 },
-                                    hover: { scale: 1.05 },
-                                    tap: { scale: 0.95 },
-                                }}
-                                whileHover="hover"
-                                whileTap="tap"
-                            >
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                 <Button
                                     className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
-                                    disabled={loading || isLoading}
+                                    disabled={loading || isLoadingTip}
                                     aria-label="Withdraw balance"
                                 >
-                                    {loading || isLoading ? (
+                                    {loading || isLoadingTip ? (
                                         <motion.div
                                             className="h-5 w-5 border-2 border-t-transparent border-white rounded-full"
                                             animate={{ rotate: 360 }}
@@ -163,10 +159,7 @@ const Balance = function ({
                             </motion.div>
                         </AlertDialogTrigger>
                         <AnimatePresence>
-                            <AlertDialogContent
-                                asChild
-                                className="sm:max-w-md rounded-2xl bg-gradient-to-br from-blue-50/90 to-purple-50/90 dark:from-slate-900/90 dark:to-slate-800/90 border border-blue-200/50 dark:border-blue-900/50 shadow-lg p-6"
-                            >
+                            <AlertDialogContent className="sm:max-w-md rounded-2xl bg-gradient-to-br from-blue-50/90 to-purple-50/90 p-6 dark:from-slate-900/90 dark:to-slate-800/90">
                                 <motion.div
                                     variants={{
                                         hidden: { opacity: 0, scale: 0.95 },
@@ -196,18 +189,13 @@ const Balance = function ({
                                                 Cancel
                                             </Button>
                                         </AlertDialogCancel>
-                                        <AlertDialogAction asChild>
-                                            <motion.div
-                                                variants={{
-                                                    rest: { scale: 1 },
-                                                    hover: { scale: 1.05 },
-                                                    tap: { scale: 0.95 },
-                                                }}
-                                                whileHover="hover"
-                                                whileTap="tap"
-                                            >
+                                        <AlertDialogAction
+                                            asChild
+                                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                                        >
+                                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                                 <Button
-                                                    onClick={isNil(wallet) ? () => redirect(routers.login) : handleWithdraw}
+                                                    onClick={isNil(wallet) ? () => router.push(routers.login) : handleWithdraw}
                                                     className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                                                     disabled={loading}
                                                     aria-label={isNil(wallet) ? "Connect wallet" : "Confirm withdraw"}
@@ -238,23 +226,23 @@ const Balance = function ({
             <div className="mt-4 rounded-lg bg-blue-50/80 p-4 dark:bg-slate-800/80">
                 <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Balance for Tipping Others</span>
-                    <Drawer direction="bottom">
+                    <Drawer>
                         <DrawerTrigger asChild>
                             <Button
                                 className="rounded-lg border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700"
-                                aria-label="View all tokens"
+                                aria-label="View proposal information"
                             >
-                                Proposal Infomation
+                                Proposal Information
                             </Button>
                         </DrawerTrigger>
                         <DrawerContent>
-                            <div className="w-full mx-auto max-w-md">
+                            <div className="mx-auto w-full max-w-md">
                                 <Tipper
-                                    image={(proposal?.image as string) || "/images/common/loading.png"}
-                                    title={proposal?.title as string}
-                                    author={proposal?.author as string}
-                                    slug={proposal?.walletAddress as string}
-                                    datetime={new Date(Number(proposal?.datetime)).toLocaleString("en-GB", {
+                                    image={proposal.image || images.logo}
+                                    title={proposal.title || "Untitled Proposal"}
+                                    author={proposal.author || "Unknown Author"}
+                                    slug={proposal.walletAddress || ""}
+                                    datetime={new Date(Number(proposal.datetime || Date.now())).toLocaleString("en-GB", {
                                         day: "2-digit",
                                         month: "2-digit",
                                         year: "numeric",
@@ -279,39 +267,32 @@ const Balance = function ({
                             initial="initial"
                             animate="animate"
                         >
-                            {isLoadingBalanceOther ? (
+                            {isLoadingCommit ? (
                                 "0.00"
                             ) : (
-                                <CountUp
-                                    start={0}
-                                    end={(((balanceCommit as number) / DECIMAL_PLACE) as number) || 0}
-                                    duration={2.75}
-                                    separator=" "
-                                    decimals={4}
-                                    decimal=","
-                                />
+                                <CountUp start={0} end={balanceCommitADA} duration={2.75} decimals={4} decimal="," separator=" " />
                             )}{" "}
                             ADA
                         </motion.span>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                             ≈ $
-                            {isLoadingBalanceOther ? (
+                            {isLoadingCommit ? (
                                 "0.00"
                             ) : (
                                 <CountUp
                                     start={0}
-                                    end={((balanceCommit as number) / DECIMAL_PLACE) * 0.92 || 0}
+                                    end={balanceCommitADA * adaConversionRate}
                                     duration={2.75}
-                                    separator=" "
                                     decimals={4}
                                     decimal=","
+                                    separator=" "
                                 />
                             )}{" "}
                             USD
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Image src={images.cardano} alt="ADA" className="h-5 w-5" />
+                        <Image src={images.cardano} alt="Cardano ADA" className="h-5 w-5" />
                         <span className="font-medium text-gray-800 dark:text-gray-300">ADA</span>
                     </div>
                 </div>
