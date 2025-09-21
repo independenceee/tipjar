@@ -34,6 +34,7 @@ type TipForm = z.infer<typeof TipSchema>;
 
 const FormTip = function ({ tipAddress }: { tipAddress: string }) {
     const { address, signTx } = useWallet();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [amount, setAmount] = useState<string>("");
     const queryClient = useQueryClient();
 
@@ -67,18 +68,21 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
         queryKey: ["balance-tip", tipAddress],
         queryFn: () => getBalanceTip({ walletAddress: tipAddress }),
         enabled: !!tipAddress,
+        staleTime: 0,
     });
 
     const { data: balanceCommit, isLoading: isLoadingBalanceCommit } = useQuery({
         queryKey: ["balance-commit", address],
         queryFn: () => getBalanceCommit({ walletAddress: address as string }),
         enabled: !!address,
+        staleTime: 0,
     });
 
     const { data: dataUTxOOnlyLovelace, isLoading: isLoadingUTxOOnlyLovelace } = useQuery({
         queryKey: ["utxos", address],
         queryFn: () => getUTxOOnlyLovelace({ walletAddress: address as string, quantity: DECIMAL_PLACE * 10 }),
         enabled: !!address,
+        staleTime: 0,
     });
 
     const { data: adaPrice } = useQuery({
@@ -135,6 +139,11 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                     toast.error("Please enter a valid amount");
                     return;
                 }
+
+                if ((balanceCommit as number) / DECIMAL_PLACE <= data.amount) {
+                    toast.error("Please enter a valid amount");
+                    return;
+                }
                 const unsignedTx = await send({
                     walletAddress: address,
                     amount: data.amount,
@@ -152,10 +161,16 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                     signedTx,
                     isCreator: false,
                 });
+                setIsDialogOpen(false);
                 toast.success("Tip sent successfully!");
                 setValueSend("amount", 0);
                 setAmount("");
-                queryClient.invalidateQueries({ queryKey: ["status", tipAddress] });
+                await Promise.allSettled([
+                    queryClient.invalidateQueries({ queryKey: ["balance-tip", tipAddress] }),
+                    queryClient.invalidateQueries({ queryKey: ["balance-commit", address] }),
+                    queryClient.invalidateQueries({ queryKey: ["status", tipAddress] }),
+                    queryClient.invalidateQueries({ queryKey: ["recents"] }),
+                ]);
             } catch (error) {
                 console.error("Tipping failed:", error);
                 toast.error("Failed to send tip. Please try again.");
@@ -441,11 +456,12 @@ const FormTip = function ({ tipAddress }: { tipAddress: string }) {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            <AlertDialog>
+                            <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                                 <AlertDialogTrigger asChild>
                                     <Button
                                         type="button"
-                                        disabled={isSubmittingSend}
+                                        disabled={isSubmittingSend || Number(amount) <= 0}
+                                        onClick={() => Number(amount) >= 2 && setIsDialogOpen(true)}
                                         className="w-full rounded-md bg-blue-500 dark:bg-blue-600 py-3 px-8 text-base font-semibold text-white dark:text-white shadow-lg hover:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-50 transition-colors"
                                     >
                                         {isSubmittingSend ? "Sending..." : "Send Tip"}

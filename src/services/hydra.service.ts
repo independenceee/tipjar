@@ -188,32 +188,28 @@ export const send = async function ({
  *
  * @returns {Promise<{data: string | null; result: boolean; message: string}>}
  */
-export const submitHydraTx = async function ({
-    signedTx,
-    isCreator,
-}: {
-    signedTx: string;
-    isCreator: boolean;
-}): Promise<{ data: string | null; result: boolean; message: string }> {
+export const submitHydraTx = async function ({ signedTx, isCreator }: { signedTx: string; isCreator: boolean }): Promise<void> {
     try {
         const hydraProvider = new HydraProvider({
             httpUrl: isCreator ? HYDRA_HTTP_URL : HYDRA_HTTP_URL_SUB,
             wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
         });
-        await hydraProvider.connect();
-        const txHash = await hydraProvider.submitTx(signedTx);
 
-        return {
-            data: txHash,
-            result: true,
-            message: "Transaction submitted successfully",
-        };
+        await hydraProvider.connect();
+        await new Promise<void>(async (resolve, reject) => {
+            hydraProvider.submitTx(signedTx).catch((error: Error) => reject(error));
+            hydraProvider.onMessage((message) => {
+                try {
+                    if (message.tag === "SnapshotConfirmed") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
     } catch (error) {
-        return {
-            data: null,
-            result: false,
-            message: parseError(error),
-        };
+        throw new Error(String(error));
     }
 };
 

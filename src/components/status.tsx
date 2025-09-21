@@ -42,7 +42,7 @@ const Status: React.FC<StatusProps> = ({ title, data, loading }) => {
             setIsLoading(true);
             await withdraw({ status: data, isCreator: true });
             await deleteCreator();
-            queryClient.invalidateQueries({ queryKey: ["status"] });
+            queryClient.invalidateQueries({ queryKey: ["status", "proposals", "proposal"] });
             toast.success("Fanout to layer 1 successful!");
             router.push(routers.dashboard);
         } catch (error) {

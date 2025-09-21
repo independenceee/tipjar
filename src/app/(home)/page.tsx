@@ -4,6 +4,7 @@ import Link from "next/link";
 import Action from "~/components/action";
 import Contact from "~/components/contact";
 import { routers } from "~/constants/routers";
+import { images } from "~/public/images*";
 
 export default function Home() {
     return (
@@ -142,7 +143,10 @@ export default function Home() {
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{ duration: 0.8, delay: 0.2 }}
                                         >
-                                            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"></div>
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                style={{ backgroundImage: `url(${images.home1.src})` }}
+                                            ></div>
                                             <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-800/40 to-transparent"></div>
                                             <div className="relative flex h-full flex-col justify-end p-4">
                                                 <div className="mb-3 h-8 w-full bg-gradient-to-r from-blue-500/20 to-transparent"></div>
@@ -158,7 +162,10 @@ export default function Home() {
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{ duration: 0.8, delay: 0.4 }}
                                         >
-                                            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"></div>
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                style={{ backgroundImage: `url(${images.home2.src})` }}
+                                            ></div>
                                             <div className="absolute inset-0 bg-gradient-to-t from-cyan-900/80 via-cyan-800/40 to-transparent"></div>
                                             <div className="relative flex h-full flex-col justify-end p-4">
                                                 <div className="mb-3 h-12 w-full bg-gradient-to-r from-cyan-500/20 to-transparent"></div>
@@ -174,7 +181,10 @@ export default function Home() {
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{ duration: 0.8, delay: 0.6 }}
                                         >
-                                            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"></div>
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                style={{ backgroundImage: `url(${images.home3.src})` }}
+                                            ></div>
                                             <div className="absolute inset-0 bg-gradient-to-t from-purple-900/80 via-purple-800/40 to-transparent"></div>
                                             <div className="relative flex h-full flex-col justify-end p-4">
                                                 <div className="mb-3 h-12 w-full bg-gradient-to-r from-purple-500/20 to-transparent"></div>
@@ -190,7 +200,10 @@ export default function Home() {
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{ duration: 0.8, delay: 0.8 }}
                                         >
-                                            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"></div>
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                style={{ backgroundImage: `url(${images.home4.src})` }}
+                                            ></div>
                                             <div className="absolute inset-0 bg-gradient-to-t from-green-900/80 via-green-800/40 to-transparent"></div>
                                             <div className="relative flex h-full flex-col justify-end p-4">
                                                 <div className="mb-3 h-10 w-full bg-gradient-to-r from-green-500/20 to-transparent"></div>

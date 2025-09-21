@@ -22,7 +22,7 @@ import { useWallet } from "~/hooks/use-wallet";
 import { images } from "~/public/images";
 import { routers } from "~/constants/routers";
 import { DECIMAL_PLACE, HeadStatus } from "~/constants/common";
-import { createProposal, getProposal } from "~/services/tipjar.service";
+import { createProposal, getProposal, getProposals } from "~/services/tipjar.service";
 import { commit, getStatus } from "~/services/hydra.service";
 import { getUTxOOnlyLovelace, submitTx } from "~/services/mesh.service";
 import { CreatorSchema } from "~/lib/schema";
@@ -37,6 +37,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
+import { isNil } from "lodash";
 
 type Form = z.infer<typeof CreatorSchema>;
 
@@ -50,6 +51,11 @@ export default function Dashboard() {
         queryKey: ["proposal", address],
         queryFn: () => getProposal({ walletAddress: address as string }),
         enabled: !!address && sessionStatus === "authenticated",
+    });
+
+    const { data: proposals } = useQuery({
+        queryKey: ["proposals", address],
+        queryFn: () => getProposals({ limit: 12, page: 1, walletAddress: address || "" }),
     });
 
     const { data: statusData, isLoading: isStatusLoading } = useQuery({
@@ -91,6 +97,7 @@ export default function Dashboard() {
             if (!address || !data.adaCommit) return;
             try {
                 setLoading(true);
+
                 const unsignedTx = await commit({
                     walletAddress: address,
                     input: {
@@ -119,9 +126,16 @@ export default function Dashboard() {
                 });
 
                 toast.success("Proposal created successfully!");
-                queryClient.invalidateQueries({ queryKey: ["status", "proposal"] });
+                queryClient.invalidateQueries({ queryKey: ["status", "proposal", "proposals"] });
+                await Promise.allSettled([
+                    queryClient.invalidateQueries({ queryKey: ["balance-tip"] }),
+                    queryClient.invalidateQueries({ queryKey: ["balance-commit"] }),
+                    queryClient.invalidateQueries({ queryKey: ["status"] }),
+                    queryClient.invalidateQueries({ queryKey: ["recents"] }),
+                    queryClient.invalidateQueries({ queryKey: ["proposal"] }),
+                ]);
             } catch (error) {
-                toast.error(error instanceof Error ? error.message : "Failed to create proposal");
+                toast.error("Proposal created feild !");
             } finally {
                 setLoading(false);
             }
@@ -142,83 +156,19 @@ export default function Dashboard() {
         [],
     );
 
-    if (sessionStatus === "loading" || isProposalLoading || isStatusLoading || isUtxoLoading || loading) {
-        return <Loading />;
-    }
-
     if (sessionStatus === "unauthenticated") {
         redirect("/login");
     }
 
-    if (statusData === HeadStatus.OPEN || statusData === HeadStatus.CLOSED || statusData === HeadStatus.FANOUT_POSSIBLE) {
-        return (
-            <motion.main
-                className="relative pt-20"
-                variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                        opacity: 1,
-                        transition: { staggerChildren: 0.2, ease: "easeOut" },
-                    },
-                }}
-                initial="hidden"
-                animate="visible"
-            >
-                <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
-                    <motion.div
-                        className="flex flex-col items-center justify-center py-16 text-center"
-                        variants={{
-                            hidden: { opacity: 0, y: 20 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                        }}
-                    >
-                        <motion.div
-                            className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900"
-                            animate={{ rotate: [0, 10, -10, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                        >
-                            <Image src={images.logo} alt="Logo" />
-                        </motion.div>
-                        <motion.h3
-                            className="text-2xl font-semibold text-gray-900 dark:text-white mb-2"
-                            variants={{
-                                hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                            }}
-                        >
-                            Head Is Currently In Use
-                        </motion.h3>
-                        <motion.p
-                            className="text-lg text-gray-600 dark:text-gray-300 max-w-md mb-6"
-                            variants={{
-                                hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                            }}
-                        >
-                            No tippers to display at the moment. Check back later or try a different page!
-                        </motion.p>
-                        <motion.div
-                            variants={{
-                                hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                            }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            <Link
-                                href={routers.tipper}
-                                className="inline-flex items-center justify-center whitespace-nowrap rounded-sm bg-blue-600 dark:bg-white px-8 py-2 text-lg font-semibold text-white dark:text-blue-900 shadow-xl hover:bg-blue-700 dark:hover:bg-gray-100"
-                            >
-                                Go To Tipper
-                            </Link>
-                        </motion.div>
-                    </motion.div>
-                </div>
-            </motion.main>
-        );
-    }
+    // if (sessionStatus === "loading" || isProposalLoading || isStatusLoading || isUtxoLoading || loading) {
+    //     return <Loading />;
+    // }
 
-    if (!proposalData?.data) {
+    if (
+        isNil(proposalData?.data) &&
+        Number(proposals?.totalItem) === 1 &&
+        (statusData === HeadStatus.IDLE || statusData === HeadStatus.INITIALIZING)
+    ) {
         return (
             <motion.aside
                 className="container mx-auto py-8 px-4 pt-24"
@@ -429,86 +379,164 @@ export default function Dashboard() {
         );
     }
 
-    return (
-        <motion.aside
-            className="container mx-auto py-8 px-4 pt-24"
-            variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                    opacity: 1,
-                    transition: { staggerChildren: 0.2, ease: "easeOut" },
-                },
-            }}
-            initial="hidden"
-            animate="visible"
-        >
-            <div className="max-w-7xl mx-auto space-y-6 px-4 py-8">
-                <motion.section
-                    className="w-full mb-6"
-                    variants={{
-                        hidden: { opacity: 0, y: 20 },
-                        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                    }}
-                >
-                    <Status
-                        title="There is now a head available for you to access and below is the current state of your head"
-                        loading={isStatusLoading}
-                        data={statusData as string}
-                    />
-                </motion.section>
-                <motion.section
-                    className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                    variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                            opacity: 1,
-                            transition: { staggerChildren: 0.2, ease: "easeOut" },
-                        },
-                    }}
-                >
-                    <div className="space-y-6 flex flex-col">
-                        <motion.div
-                            variants={{
-                                hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                            }}
-                        >
-                            <Balance
-                                status={statusData as string}
-                                proposal={proposalData?.data}
-                                walletAddress={address as string}
-                                assetName={proposalData?.data?.author as string}
-                            />
-                        </motion.div>
-                        <motion.div
-                            variants={{
-                                hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                            }}
-                        >
-                            <Info link={`https://tipjar.cardano2vn.io/tipper/${address}`} />
-                        </motion.div>
-                    </div>
-                    <motion.div
-                        className="space-y-6 flex flex-col"
+    if (proposalData?.data?.walletAddress === address) {
+        return (
+            <motion.aside
+                className="container mx-auto py-8 px-4 pt-24"
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.2, ease: "easeOut" },
+                    },
+                }}
+                initial="hidden"
+                animate="visible"
+            >
+                <div className="max-w-7xl mx-auto space-y-6 px-4 py-8">
+                    <motion.section
+                        className="w-full mb-6"
                         variants={{
                             hidden: { opacity: 0, y: 20 },
                             visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
                         }}
                     >
-                        <Recent walletAddress={address as string} />
+                        <Status
+                            title="There is now a head available for you to access and below is the current state of your head"
+                            loading={isStatusLoading}
+                            data={statusData as string}
+                        />
+                    </motion.section>
+                    <motion.section
+                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                        variants={{
+                            hidden: { opacity: 0 },
+                            visible: {
+                                opacity: 1,
+                                transition: { staggerChildren: 0.2, ease: "easeOut" },
+                            },
+                        }}
+                    >
+                        <div className="space-y-6 flex flex-col">
+                            <motion.div
+                                variants={{
+                                    hidden: { opacity: 0, y: 20 },
+                                    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                                }}
+                            >
+                                <Balance
+                                    status={statusData as string}
+                                    proposal={proposalData?.data}
+                                    walletAddress={address as string}
+                                    assetName={proposalData?.data?.author as string}
+                                />
+                            </motion.div>
+                            <motion.div
+                                variants={{
+                                    hidden: { opacity: 0, y: 20 },
+                                    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                                }}
+                            >
+                                <Info link={`https://tipjar.cardano2vn.io/tipper/${address}`} />
+                            </motion.div>
+                        </div>
+                        <motion.div
+                            className="space-y-6 flex flex-col"
+                            variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                            }}
+                        >
+                            <Recent walletAddress={address as string} />
+                        </motion.div>
+                    </motion.section>
+                    <motion.div
+                        className="w-full"
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                        }}
+                    >
+                        <Withdraw walletAddress={address as string} />
                     </motion.div>
-                </motion.section>
-                <motion.div
-                    className="w-full"
-                    variants={{
-                        hidden: { opacity: 0, y: 20 },
-                        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                    }}
-                >
-                    <Withdraw walletAddress={address as string} />
-                </motion.div>
-            </div>
-        </motion.aside>
-    );
+                </div>
+            </motion.aside>
+        );
+    }
+
+    if (
+        (statusData === HeadStatus.OPEN ||
+            statusData === HeadStatus.CLOSED ||
+            statusData === HeadStatus.FANOUT_POSSIBLE ||
+            statusData === HeadStatus.INITIALIZING) &&
+        proposalData?.data?.walletAddress !== address
+    ) {
+        return (
+            <motion.main
+                className="relative pt-20"
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.2, ease: "easeOut" },
+                    },
+                }}
+                initial="hidden"
+                animate="visible"
+            >
+                <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+                    <motion.div
+                        className="flex flex-col items-center justify-center py-16 text-center"
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                        }}
+                    >
+                        <motion.div
+                            className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900"
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            <Image src={images.logo} alt="Logo" />
+                        </motion.div>
+                        <motion.h3
+                            className="text-2xl font-semibold text-gray-900 dark:text-white mb-2"
+                            variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                            }}
+                        >
+                            Head Is Currently In Use
+                        </motion.h3>
+                        <motion.p
+                            className="text-lg text-gray-600 dark:text-gray-300 max-w-md mb-6"
+                            variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                            }}
+                        >
+                            No tippers to display at the moment. Check back later or try a different page!
+                        </motion.p>
+                        <motion.div
+                            variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                            }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <Link
+                                href={routers.tipper}
+                                className="inline-flex items-center justify-center whitespace-nowrap rounded-sm bg-blue-600 dark:bg-white px-8 py-2 text-lg font-semibold text-white dark:text-blue-900 shadow-xl hover:bg-blue-700 dark:hover:bg-gray-100"
+                            >
+                                Go To Tipper
+                            </Link>
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </motion.main>
+        );
+    }
+
+    return <Loading />;
 }

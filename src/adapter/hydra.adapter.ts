@@ -283,6 +283,22 @@ export class HydraAdapter {
         });
     };
 
+    public submitTx = async (signedTx: string) => {
+        await this.hydraProvider.connect();
+        await new Promise<void>(async (resolve, reject) => {
+            this.hydraProvider.submitTx(signedTx).catch((error: Error) => reject(error));
+            this.hydraProvider.onMessage((message) => {
+                try {
+                    if (message.tag === "SnapshotConfirmed") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+    };
+
     /**
      * @description
      * Commit UTxOs into the Hydra head so that they become available for off-chain Hydra transactions.

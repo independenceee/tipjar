@@ -278,7 +278,7 @@ export async function deleteCreator() {
  *   message?: string;
  * }>}
  */
-export const getWithdraws = async function ({ walletAddress, page = 1, limit = 6 }: { walletAddress: string; page?: number; limit?: number }) {
+export const getWithdraws = async function ({ walletAddress, page = 1, limit = 5 }: { walletAddress: string; page?: number; limit?: number }) {
     try {
         if (!walletAddress || walletAddress.trim() === "") {
             throw new Error("Wallet address is not found !");

@@ -26,14 +26,17 @@ describe("Save data and read data to participate in the cardano hydra process", 
             meshWallet: meshWallet,
         });
         const unsignedTx: string = await meshTxBuilder.signup({
-            assetName: "Nguyen Duy Khanh",
+            assetName: "Alice",
             metadata: {
-                author: "Nguyen Duy Khanh",
+                author: "Alice",
                 title: "Beyond Financial Sovereignty: Democratizing Treasury Administration",
                 image: "https://www.andamio.io/_next/image?url=%2Fblog%2F028-blog-cover.png&w=1920&q=75&dpl=dpl_GFazRiFpLrX9toggGgN9UoZDYapY",
                 walletAddress: await meshWallet.getChangeAddress(),
                 tag: "Creator",
                 datetime: Date.now().toString(),
+                startDate: Date.now().toString(),
+                endDate: Date.now().toString(),
+                participants: 2,
             },
         });
 

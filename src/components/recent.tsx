@@ -14,7 +14,7 @@ import { shortenString } from "~/lib/utils";
 const Recent = function ({ walletAddress }: { walletAddress: string }) {
     const [page, setPage] = useState(1);
     const { data, isLoading, error } = useQuery({
-        queryKey: ["hydra", walletAddress, page],
+        queryKey: ["recents", walletAddress, page],
         queryFn: () =>
             getRecents({
                 walletAddress: walletAddress!,
