@@ -328,6 +328,9 @@ export class HydraAdapter {
             return await this.hydraInstance.commitFunds(input.txHash, input.outputIndex);
         }
 
-        return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
+        console.log(utxos[0]);
+
+        // return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
+        return await this.hydraInstance.commitFunds(utxos[0].input.txHash, utxos[0].input.outputIndex);
     };
 }

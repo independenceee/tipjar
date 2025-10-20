@@ -6,8 +6,9 @@ import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 
 describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communities", function () {
     let meshWallet: MeshWallet;
+    let isCreator: boolean = true; // Use for Alice
+    // let isCreator: boolean = false; // Use for Bob
     let hydraProvider: HydraProvider;
-    let hydraProviderSubscription: HydraProvider;
 
     beforeEach(async function () {
         meshWallet = new MeshWallet({
@@ -17,19 +18,14 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
             key: {
                 type: "mnemonic",
                 // words: process.env.APP_MNEMONIC?.split(" ") || [],
-                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
                 // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
             },
         });
 
         hydraProvider = new HydraProvider({
-            httpUrl: HYDRA_HTTP_URL_SUB,
-            wsUrl: HYDRA_HTTP_URL_SUB,
-        });
-
-        hydraProviderSubscription = new HydraProvider({
-            httpUrl: HYDRA_HTTP_URL_SUB,
-            wsUrl: HYDRA_WS_URL_SUB,
+            httpUrl: isCreator ? HYDRA_HTTP_URL : HYDRA_HTTP_URL_SUB,
+            wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
         });
     });
 
@@ -111,7 +107,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
 
     describe("Implement full fund lifecycle within Hydra head (commit funds into head and decommit them back to main chain)", () => {
         it("1- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
-            // return;
+            return;
             const hydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,
@@ -120,8 +116,6 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
             const commitSignedTx = await meshWallet.signTx(commitUnsignedTx, true);
             const commitTxHash = await meshWallet.submitTx(commitSignedTx);
             console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
-            const snapshotUtxos = await hydraProvider.subscribeSnapshotUtxo();
-            console.log(snapshotUtxos);
         });
 
         it("2- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
@@ -145,7 +139,7 @@ describe("Hydra TipJar: Bringing Instant and Affordable Tips to Cardano Communit
                 hydraProvider: hydraProvider,
             });
             await hydraTxBuilder.initialize();
-            const unsignedTx = await hydraTxBuilder.send({
+            const unsignedTx = await hydraTxBuilder.tip({
                 tipAddress: "addr_test1qzk0hl57jzwu2p0kpuqs48q2f7vty8efhcwh4l8wynckp4se2hwvvldt8r4c3cr7dcszlt2f7xs5ef2hydn25pugcgvs4843vd",
                 amount: 3,
             });
