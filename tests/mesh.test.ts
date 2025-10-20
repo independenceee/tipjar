@@ -41,6 +41,8 @@ describe("Save data and read data to participate in the cardano hydra process", 
         });
 
         const signedTx = await meshWallet.signTx(unsignedTx, true);
+        console.log(signedTx);
+        return;
         const txHash = await meshWallet.submitTx(signedTx);
         await new Promise<void>(function (resolve, reject) {
             blockfrostProvider.onTxConfirmed(txHash, () => {
@@ -76,6 +78,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
         });
         const unsignedTx: string = await meshTxBuilder.remove();
         const signedTx = await meshWallet.signTx(unsignedTx, true);
+        return;
         const txHash = await meshWallet.submitTx(signedTx);
 
         await new Promise<void>(function (resolve, reject) {

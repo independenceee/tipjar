@@ -16,7 +16,7 @@ export class HydraTxBuilder extends HydraAdapter {
      *
      * @throws {Error} - Throws if UTxOs are insufficient or wallet address cannot be retrieved.
      */
-    send = async ({ tipAddress, amount = DECIMAL_PLACE }: { tipAddress: string; amount: number }) => {
+    tip = async ({ tipAddress, amount = DECIMAL_PLACE }: { tipAddress: string; amount: number }) => {
         await this.hydraProvider.connect();
         const utxos = await this.hydraProvider.fetchAddressUTxOs(await this.meshWallet.getChangeAddress());
         const utxo = this.getUTxOOnlyLovelace(utxos, amount);
@@ -53,7 +53,7 @@ export class HydraTxBuilder extends HydraAdapter {
      *
      * @throws {Error} - Throws if no UTxOs are found or if transaction build fails.
      */
-    public merge = async () => {
+    public claim = async () => {
         await this.hydraProvider.connect();
         const utxos = await this.hydraProvider.fetchUTxOs(await this.meshWallet.getChangeAddress());
         const unsignedTx = this.meshTxBuilder;
